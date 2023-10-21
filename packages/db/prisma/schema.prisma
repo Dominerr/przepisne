@@ -11,8 +11,13 @@ datasource db {
     relationMode = "prisma"
 }
 
-model Post {
+model Recipe {
     id      String @id @default(cuid())
-    title   String
-    content String
+    name   String
+    instructions String
+    ingredients String
+    authorId String
+
+    @@index([authorId])
+
 }

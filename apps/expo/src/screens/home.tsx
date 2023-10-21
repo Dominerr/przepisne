@@ -1,7 +1,7 @@
 import React from "react";
 
 import { Button, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { useAuth } from "@clerk/clerk-expo";
+import { useAuth, useUser } from "@clerk/clerk-expo";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FlashList } from "@shopify/flash-list";
 import type { inferProcedureOutput } from "@trpc/server";
@@ -23,46 +23,60 @@ const SignOut = () => {
   );
 };
 
-const PostCard: React.FC<{
-  post: inferProcedureOutput<AppRouter["post"]["all"]>[number];
-}> = ({ post }) => {
+const RecipeCard: React.FC<{
+  recipe: inferProcedureOutput<AppRouter["recipe"]["all"]>[number];
+}> = ({ recipe: recipe }) => {
   return (
     <View className="rounded-lg border-2 border-gray-500 p-4">
-      <Text className="text-xl font-semibold text-[#cc66ff]">{post.title}</Text>
-      <Text className="text-white">{post.content}</Text>
+      <Text className="text-xl font-semibold text-[#cc66ff]">
+        {recipe.name}
+      </Text>
+      <Text className="text-white">{recipe.ingredients}</Text>
+      <Text className="text-white">{recipe.instructions}</Text>
     </View>
   );
 };
 
-const CreatePost: React.FC = () => {
+const CreateRecipe: React.FC = () => {
+  const { user } = useUser();
   const utils = trpc.useContext();
-  const { mutate } = trpc.post.create.useMutation({
+  const { mutate } = trpc.recipe.create.useMutation({
     async onSuccess() {
-      await utils.post.all.invalidate();
+      await utils.recipe.all.invalidate();
     },
   });
 
-  const [title, onChangeTitle] = React.useState("");
-  const [content, onChangeContent] = React.useState("");
+  const [name, onChangeName] = React.useState("");
+  const [instructions, onChangeInstructions] = React.useState("");
+  const [ingredients, onChangeIngredients] = React.useState("");
 
   return (
     <View className="flex flex-col border-t-2 border-gray-500 p-4">
       <TextInput
         className="mb-2 rounded border-2 border-gray-500 p-2 text-white"
-        onChangeText={onChangeTitle}
-        placeholder="Title"
+        onChangeText={onChangeName}
+        placeholder="Name"
       />
       <TextInput
         className="mb-2 rounded border-2 border-gray-500 p-2 text-white"
-        onChangeText={onChangeContent}
-        placeholder="Content"
+        onChangeText={onChangeInstructions}
+        placeholder="Instructions"
       />
+      <TextInput
+        className="mb-2 rounded border-2 border-gray-500 p-2 text-white"
+        onChangeText={onChangeIngredients}
+        placeholder="Ingredients"
+      />
+
       <TouchableOpacity
         className="rounded bg-[#cc66ff] p-2"
         onPress={() => {
+          if (!user?.id) return;
           mutate({
-            title,
-            content,
+            name,
+            instructions,
+            ingredients,
+            authorId: user.id,
           });
         }}
       >
@@ -73,8 +87,8 @@ const CreatePost: React.FC = () => {
 };
 
 export const HomeScreen = () => {
-  const postQuery = trpc.post.all.useQuery();
-  const [showPost, setShowPost] = React.useState<string | null>(null);
+  const recipeQuery = trpc.recipe.all.useQuery();
+  const [showRecipe, setShowRecipe] = React.useState<string | null>(null);
 
   return (
     <SafeAreaView className="bg-[#2e026d] bg-gradient-to-b from-[#2e026d] to-[#15162c]">
@@ -84,10 +98,10 @@ export const HomeScreen = () => {
         </Text>
 
         <View className="py-2">
-          {showPost ? (
+          {showRecipe ? (
             <Text className="text-white">
               <Text className="font-semibold">Selected post:</Text>
-              {showPost}
+              {showRecipe}
             </Text>
           ) : (
             <Text className="font-semibold italic text-white">
@@ -97,17 +111,17 @@ export const HomeScreen = () => {
         </View>
 
         <FlashList
-          data={postQuery.data}
+          data={recipeQuery.data}
           estimatedItemSize={20}
           ItemSeparatorComponent={() => <View className="h-2" />}
           renderItem={(p) => (
-            <TouchableOpacity onPress={() => setShowPost(p.item.id)}>
-              <PostCard post={p.item} />
+            <TouchableOpacity onPress={() => setShowRecipe(p.item.id)}>
+              <RecipeCard recipe={p.item} />
             </TouchableOpacity>
           )}
         />
 
-        <CreatePost />
+        <CreateRecipe />
         <SignOut />
       </View>
     </SafeAreaView>
