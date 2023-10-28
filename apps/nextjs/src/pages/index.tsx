@@ -7,20 +7,19 @@ import { useAuth, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 
 const PostCard: React.FC<{
-  post: inferProcedureOutput<AppRouter["post"]["all"]>[number];
+  post: inferProcedureOutput<AppRouter["recipe"]["all"]>[number];
 }> = ({ post }) => {
   return (
     <div className="max-w-2xl rounded-lg border-2 border-gray-500 p-4 transition-all hover:scale-[101%]">
       <h2 className="text-2xl font-bold text-[hsl(280,100%,70%)]">
-        {post.title}
+        {post.name}
       </h2>
-      <p>{post.content}</p>
     </div>
   );
 };
 
 const Home: NextPage = () => {
-  const postQuery = trpc.post.all.useQuery();
+  const postQuery = trpc.recipe.all.useQuery();
 
   return (
     <>
