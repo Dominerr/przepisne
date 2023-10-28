@@ -17,4 +17,13 @@ export const authRouter = router({
     .mutation(({ ctx, input }) => {
       return ctx.prisma.user.create({ data: input });
     }),
+  deleteUser: publicProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
+    .mutation(({ ctx, input }) => {
+      return ctx.prisma.user.delete({ where: { id: input.id } });
+    }),
 });

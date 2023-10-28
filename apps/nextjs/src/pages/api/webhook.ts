@@ -3,6 +3,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import type { WebhookRequiredHeaders } from "svix";
 
 import { Webhook } from "svix";
+import { trpc } from "../../utils/trpc";
 
 const webhookSecret: string = process.env.WEBHOOK_SECRET ?? "";
 
@@ -29,11 +30,15 @@ export default async function handler(
   const eventType = evt.type;
   if (eventType === "user.created") {
     console.log(`User ${id} was ${eventType}`);
-    res.status(201).json({});
+    const { mutateAsync } = trpc.auth.createUser.useMutation();
+    await mutateAsync({ id });
   }
+
   if (eventType === "user.deleted") {
     console.log(`User ${id} was ${eventType}`);
     res.status(201).json({});
+    const { mutateAsync } = trpc.auth.deleteUser.useMutation();
+    await mutateAsync({ id });
   }
 }
 
