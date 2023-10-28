@@ -5,11 +5,14 @@ import { Header } from "./Header";
 import { DiscoverScreen } from "../screens/discover";
 import Home from "../assets/icons/Home";
 import Search from "../assets/icons/Search";
+import { CreateRecipeScreen } from "../screens/create_recipe";
+import Add from "../assets/icons/Add";
 
 export type RootParamList = {
   Test: undefined;
   Home: { paramA: string };
   Discover: undefined;
+  CreateRecipe: undefined;
 };
 
 const Tab = createBottomTabNavigator<RootParamList>();
@@ -36,6 +39,17 @@ export function TabNavigator() {
           tabBarActiveTintColor: "red",
           tabBarIcon: ({ color, size }) => (
             <Search width={size} height={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="CreateRecipe"
+        component={CreateRecipeScreen}
+        options={{
+          header: () => <Header />,
+          tabBarActiveTintColor: "red",
+          tabBarIcon: ({ color, size }) => (
+            <Add width={size} height={size} color={color} />
           ),
         }}
       />

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
 import {
   Image,
   Text,
@@ -25,8 +26,8 @@ export const Header = () => {
   }
 
   return (
-    <View
-      className="flex h-min flex-row justify-between gap-4 px-3 pt-10 pb-3"
+    <SafeAreaView
+      className="flex h-min flex-row items-center justify-between gap-4 border-b-2 border-gray-200 px-4 py-3"
       style={{
         backgroundColor: modalVisible ? "rgba(0, 0, 0, 0.5)" : "white",
       }}
@@ -46,13 +47,10 @@ export const Header = () => {
         onRequestClose={() => {
           setModalVisible(!modalVisible);
         }}
-        // style={{
-        //   backgroundColor: modalVisible ? "rgba(0, 0, 0, 0.5)" : "",
-        // }}
       >
         <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
           <View
-            className="mt-[58px] flex-1 items-end justify-end"
+            className="mt-[64px] flex-1 items-end justify-end"
             style={{
               backgroundColor: modalVisible ? "rgba(0, 0, 0, 0.5)" : "",
             }}
@@ -98,6 +96,6 @@ export const Header = () => {
           </View>
         </TouchableWithoutFeedback>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 };
