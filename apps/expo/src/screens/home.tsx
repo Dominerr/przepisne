@@ -1,27 +1,13 @@
 import React from "react";
 
-import { Button, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { useAuth, useUser } from "@clerk/clerk-expo";
+import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useUser } from "@clerk/clerk-expo";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FlashList } from "@shopify/flash-list";
 import type { inferProcedureOutput } from "@trpc/server";
 import type { AppRouter } from "@acme/api";
 
 import { trpc } from "../utils/trpc";
-
-const SignOut = () => {
-  const { signOut } = useAuth();
-  return (
-    <View className="rounded-lg border-2 border-gray-500 p-4">
-      <Button
-        title="Sign Out"
-        onPress={() => {
-          signOut();
-        }}
-      />
-    </View>
-  );
-};
 
 const RecipeCard: React.FC<{
   recipe: inferProcedureOutput<AppRouter["recipe"]["all"]>[number];
@@ -86,20 +72,32 @@ const CreateRecipe: React.FC = () => {
   );
 };
 
-export const HomeScreen = () => {
+import { StackScreenProps } from "@react-navigation/stack";
+import { RootParamList } from "../components/TabNavigation";
+
+type Screen1Props = StackScreenProps<RootParamList, "Home">;
+
+export const HomeScreen = ({ navigation }: Screen1Props) => {
   const recipeQuery = trpc.recipe.all.useQuery();
   const [showRecipe, setShowRecipe] = React.useState<string | null>(null);
 
   return (
-    <SafeAreaView className="bg-[#2e026d] bg-gradient-to-b from-[#2e026d] to-[#15162c]">
-      <View className="h-full w-full p-4">
-        <Text className="mx-auto pb-2 text-5xl font-bold text-white">
-          Create <Text className="text-[#cc66ff]">T3</Text> Turbo
+    <SafeAreaView className="bg-white">
+      <View className="h-full w-full px-4">
+        <Text className="pb-2 text-5xl font-bold text-black">Przepisne</Text>
+        <Text className="pb-2 text-2xl font-semibold text-black">
+          Twoje Przepisy:
         </Text>
+        {/* <Button
+          title="Go to test"
+          onPress={() => {
+            navigation.navigate("Test");
+          }}
+        /> */}
 
         <View className="py-2">
           {showRecipe ? (
-            <Text className="text-white">
+            <Text className="text-black">
               <Text className="font-semibold">Selected post:</Text>
               {showRecipe}
             </Text>
@@ -122,7 +120,6 @@ export const HomeScreen = () => {
         />
 
         <CreateRecipe />
-        <SignOut />
       </View>
     </SafeAreaView>
   );

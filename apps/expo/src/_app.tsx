@@ -3,11 +3,14 @@ import React from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { TRPCProvider } from "./utils/trpc";
 
-import { HomeScreen } from "./screens/home";
 import { SignInSignUpScreen } from "./screens/signin";
 import { ClerkProvider, SignedIn, SignedOut } from "@clerk/clerk-expo";
 import { tokenCache } from "./utils/cache";
 import Constants from "expo-constants";
+
+import { NavigationContainer } from "@react-navigation/native";
+
+import { TabNavigator } from "./components/TabNavigation";
 
 export const App = () => {
   return (
@@ -16,12 +19,15 @@ export const App = () => {
       tokenCache={tokenCache}
     >
       <SignedIn>
-        <TRPCProvider>
-          <SafeAreaProvider>
-            <HomeScreen />
-            <StatusBar />
-          </SafeAreaProvider>
-        </TRPCProvider>
+        <NavigationContainer>
+          <TRPCProvider>
+            <SafeAreaProvider>
+              <TabNavigator />
+
+              <StatusBar />
+            </SafeAreaProvider>
+          </TRPCProvider>
+        </NavigationContainer>
       </SignedIn>
       <SignedOut>
         <SignInSignUpScreen />
