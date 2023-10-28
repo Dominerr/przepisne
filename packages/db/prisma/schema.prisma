@@ -11,13 +11,40 @@ datasource db {
     relationMode = "prisma"
 }
 
+model User {
+    id       String @id @default(cuid()) 
+    Recipes  Recipe[]
+}
+
 model Recipe {
-    id      String @id @default(cuid())
-    name   String
+    id           String @id @default(cuid())
+    name         String
     instructions String
-    ingredients String
-    authorId String
+    authorId     String
+    ingredients  Ingredient[]
+    users        User[]
+}
 
-    @@index([authorId])
 
+
+model Size {
+    id     String @id @default(cuid())
+    name   String
+}
+
+model Ingredient {
+    id     String @id @default(cuid())
+    name   String
+    sizeId String 
+    recipe Recipe @relation(fields: [recipeId], references: [id])
+    recipeId String
+
+    @@index([recipeId])
+}
+
+
+model RecipeIngredient {
+    id        String @id @default(cuid())
+    recipeId  String
+    ingredientId String
 }

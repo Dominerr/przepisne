@@ -2,6 +2,7 @@ import { router, publicProcedure, protectedProcedure } from "../trpc";
 import { z } from "zod";
 import { clerkClient } from "@clerk/nextjs/server";
 import type { User } from "@clerk/nextjs/dist/api";
+
 const filterUserForClient = (user: User) => {
   return {
     id: user.id,
@@ -42,11 +43,19 @@ export const recipeRouter = router({
       z.object({
         name: z.string(),
         instructions: z.string(),
-        ingredients: z.string(),
         authorId: z.string(),
+        ingredients: z.array(z.string()),
       }),
     )
     .mutation(({ ctx, input }) => {
-      return ctx.prisma.recipe.create({ data: input });
+      const { ingredients, ...rest } = input;
+      return ctx.prisma.recipe.create({
+        data: {
+          ...rest,
+          ingredients: {
+            connect: ingredients.map((ingredient) => ({ id: ingredient })),
+          },
+        },
+      });
     }),
 });
