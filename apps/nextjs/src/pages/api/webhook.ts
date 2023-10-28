@@ -1,7 +1,7 @@
 import type { IncomingHttpHeaders } from "http";
 import type { NextApiRequest, NextApiResponse } from "next";
 import type { WebhookRequiredHeaders } from "svix";
-import type { WebhookEvent } from "@clerk/nextjs/server";
+
 import { Webhook } from "svix";
 
 const webhookSecret: string = process.env.WEBHOOK_SECRET ?? "";
@@ -16,10 +16,10 @@ export default async function handler(
   const wh = new Webhook(webhookSecret);
   console.log(webhookSecret);
 
-  let evt: WebhookEvent;
+  let evt: any;
   try {
     // Verify the webhook payload and headers
-    evt = wh.verify(payload, headers) as WebhookEvent;
+    evt = wh.verify(payload, headers) as any;
   } catch (_) {
     // If the verification fails, return a 400 error
     return res.status(400).json({});
