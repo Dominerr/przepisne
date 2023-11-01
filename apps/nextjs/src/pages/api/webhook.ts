@@ -32,22 +32,33 @@ export default async function handler(
 
   const eventType = evt.type;
   if (eventType === "user.created") {
-    console.log(`User ${id} was ${eventType}`);
-    await trpc.prisma.user.create({
-      data: {
-        id: id,
-      },
-    });
+    try {
+      await trpc.prisma.user.create({
+        data: {
+          id: id,
+        },
+      });
+      res.status(201).json({ message: "User created successfully" });
+    } catch (error) {
+      console.error("User creation failed:", error);
+      res.status(500).json({ error: "User creation failed" });
+    }
   }
 
   if (eventType === "user.deleted") {
-    console.log(`User ${id} was ${eventType}`);
-    res.status(201).json({});
-    await trpc.prisma.user.delete({
-      where: {
-        id: id,
-      },
-    });
+    try {
+      await trpc.prisma.user.delete({
+        where: {
+          id: id,
+        },
+      });
+      res.status(204).json({
+        message: "User deleted successfully",
+      });
+    } catch (error) {
+      console.error("User deletion failed:", error);
+      res.status(500).json({ error: "User deletion failed" });
+    }
   }
 }
 
