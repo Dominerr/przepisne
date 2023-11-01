@@ -3,7 +3,8 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import type { WebhookRequiredHeaders } from "svix";
 
 import { Webhook } from "svix";
-import { trpc } from "../../utils/trpc";
+
+import { createContext } from "@acme/api/src/context";
 
 const webhookSecret: string = process.env.WEBHOOK_SECRET ?? "";
 
@@ -27,18 +28,26 @@ export default async function handler(
   }
   const { id } = evt.data;
 
+  const trpc = await createContext({ req, res });
+
   const eventType = evt.type;
   if (eventType === "user.created") {
     console.log(`User ${id} was ${eventType}`);
-    const { mutateAsync } = trpc.auth.createUser.useMutation();
-    await mutateAsync({ id });
+    await trpc.prisma.user.create({
+      data: {
+        id: id,
+      },
+    });
   }
 
   if (eventType === "user.deleted") {
     console.log(`User ${id} was ${eventType}`);
     res.status(201).json({});
-    const { mutateAsync } = trpc.auth.deleteUser.useMutation();
-    await mutateAsync({ id });
+    await trpc.prisma.user.delete({
+      where: {
+        id: id,
+      },
+    });
   }
 }
 
