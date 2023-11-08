@@ -44,18 +44,38 @@ export const recipeRouter = router({
         name: z.string(),
         instructions: z.string(),
         authorId: z.string(),
-        ingredients: z.array(z.string()),
+        ingredients: z.array(
+          z.object({
+            amount: z.number(),
+            ingredientId: z.string(),
+            unitId: z.string(),
+          }),
+        ),
       }),
     )
-    .mutation(({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
       const { ingredients, ...rest } = input;
-      return ctx.prisma.recipe.create({
+
+      // Step 1: Create the new recipe
+      const createdRecipe = await ctx.prisma.recipe.create({
         data: {
           ...rest,
-          ingredients: {
-            connect: ingredients.map((ingredient) => ({ id: ingredient })),
-          },
         },
       });
+
+      // Step 2: Create the associated RecipeIngredients and ensure they are connected to the new recipe
+      const recipeIngredients = ingredients.map((ingredient) => ({
+        amount: ingredient.amount,
+        ingredientId: ingredient.ingredientId,
+        unitId: ingredient.unitId,
+        recipeId: createdRecipe.id, // Connect the RecipeIngredient to the new Recipe
+      }));
+
+      // Use Prisma to create the RecipeIngredients
+      ctx.prisma.recipeIngredient.createMany({
+        data: recipeIngredients,
+      });
+
+      return createdRecipe;
     }),
 });

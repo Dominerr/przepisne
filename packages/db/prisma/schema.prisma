@@ -21,13 +21,11 @@ model Recipe {
     name         String
     instructions String
     authorId     String
-    ingredients  Ingredient[]
+    ingredients  RecipeIngredient[]
     users        User[]
 }
 
-
-
-model Size {
+model Unit {
     id     String @id @default(cuid())
     name   String
 }
@@ -35,16 +33,15 @@ model Size {
 model Ingredient {
     id     String @id @default(cuid())
     name   String
-    sizeId String 
-    recipe Recipe @relation(fields: [recipeId], references: [id])
-    recipeId String
-
-    @@index([recipeId])
 }
 
-
 model RecipeIngredient {
-    id        String @id @default(cuid())
-    recipeId  String
+    id         String @id @default(cuid())
+    amount     Float
     ingredientId String
+    unitId     String
+    recipe     Recipe @relation(fields: [recipeId], references: [id])
+    recipeId   String
+
+    @@index([recipeId])
 }
