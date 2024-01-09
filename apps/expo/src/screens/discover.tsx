@@ -9,20 +9,33 @@ import { RecipeCard } from "../components/RecipeCard";
 
 type DiscoverScreenProps = StackScreenProps<RootParamList, "Discover">;
 
-export const DiscoverScreen = ({ navigation }: DiscoverScreenProps) => {
-  const recipeQuery = trpc.recipe.all.useQuery();
+export const DiscoverScreen = ({}: DiscoverScreenProps) => {
+  const { data: allRecipes } = trpc.recipe.all.useQuery();
+  const { data: ingredients, isSuccess: areIngredientsSuccess } =
+    trpc.helper.allIngredients.useQuery();
+  const { data: units, isSuccess: areUnitsSuccess } =
+    trpc.helper.allUnits.useQuery();
+
+  if (!areIngredientsSuccess || !areUnitsSuccess) {
+    return <Text>Loading...</Text>;
+  }
 
   return (
-    <View className="h-full w-full bg-white px-4">
-      <Text className="pb-2 text-2xl font-semibold text-black">
-        Search for recipes:
-      </Text>
+    <View className="h-full w-full px-6 py-2">
+      <View className="mb-4 flex items-center justify-between gap-x-2">
+        <Text className="pb-2 text-2xl font-semibold text-black">
+          Search for Recipes:
+        </Text>
+        <Text>Search component will go here</Text>
+      </View>
 
       <FlashList
-        data={recipeQuery.data}
+        data={allRecipes}
         estimatedItemSize={20}
-        ItemSeparatorComponent={() => <View className="h-2" />}
-        renderItem={(p) => <RecipeCard recipe={p.item} />}
+        ItemSeparatorComponent={() => <View className="h-4" />}
+        renderItem={({ item }) => (
+          <RecipeCard recipe={item} ingredients={ingredients} units={units} />
+        )}
       />
     </View>
   );

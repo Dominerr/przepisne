@@ -16,7 +16,13 @@ const filterUserForClient = (user: User) => {
 
 export const recipeRouter = router({
   all: publicProcedure.query(async ({ ctx }) => {
-    const recipes = await ctx.prisma.recipe.findMany();
+    const recipes = await ctx.prisma.recipe.findMany({
+      include: {
+        ingredients: true,
+        instructions: true,
+      },
+    });
+    console.log("recipes", recipes);
 
     const users = (
       await clerkClient.users.getUserList({
@@ -42,7 +48,12 @@ export const recipeRouter = router({
     .input(
       z.object({
         name: z.string(),
-        instructions: z.string(),
+        instructions: z.array(
+          z.object({
+            instruction: z.string(),
+            step: z.number(),
+          }),
+        ),
         authorId: z.string(),
         ingredients: z.array(
           z.object({
@@ -54,28 +65,20 @@ export const recipeRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { ingredients, ...rest } = input;
+      const { ingredients, instructions, ...rest } = input;
 
-      // Step 1: Create the new recipe
-      const createdRecipe = await ctx.prisma.recipe.create({
+      const recipe = await ctx.prisma.recipe.create({
         data: {
           ...rest,
+          ingredients: {
+            create: ingredients,
+          },
+          instructions: {
+            create: instructions,
+          },
         },
       });
 
-      // Step 2: Create the associated RecipeIngredients and ensure they are connected to the new recipe
-      const recipeIngredients = ingredients.map((ingredient) => ({
-        amount: ingredient.amount,
-        ingredientId: ingredient.ingredientId,
-        unitId: ingredient.unitId,
-        recipeId: createdRecipe.id, // Connect the RecipeIngredient to the new Recipe
-      }));
-
-      // Use Prisma to create the RecipeIngredients
-      ctx.prisma.recipeIngredient.createMany({
-        data: recipeIngredients,
-      });
-
-      return createdRecipe;
+      return recipe;
     }),
 });

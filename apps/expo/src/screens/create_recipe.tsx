@@ -4,6 +4,6 @@ import { CreateRecipe } from "../components/CreateRecipe";
 
 type CreateRecipeScreenProps = StackScreenProps<RootParamList, "CreateRecipe">;
 
-export const CreateRecipeScreen = ({ navigation }: CreateRecipeScreenProps) => {
+export const CreateRecipeScreen = ({}: CreateRecipeScreenProps) => {
   return <CreateRecipe />;
 };

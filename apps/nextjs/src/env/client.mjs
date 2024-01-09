@@ -2,7 +2,7 @@
 import { clientEnv, clientSchema } from "./schema.mjs";
 
 const _clientEnv = clientSchema.safeParse(clientEnv);
-
+console.log("🔧 Environment variables:\n", _clientEnv);
 export const formatErrors = (
   /** @type {import('zod').ZodFormattedError<Map<string,string>,string>} */
   errors,

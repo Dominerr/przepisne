@@ -9,52 +9,44 @@ import { trpc } from "../utils/trpc";
 import { StackScreenProps } from "@react-navigation/stack";
 import { RootParamList } from "../components/TabNavigation";
 
-import Add from "../assets/icons/Add";
 import { RecipeCard } from "../components/RecipeCard";
 
-type Screen1Props = StackScreenProps<RootParamList, "Home">;
+type HomeScreenProps = StackScreenProps<RootParamList, "Home">;
 
-export const HomeScreen = ({ navigation }: Screen1Props) => {
-  const recipeQuery = trpc.recipe.all.useQuery();
-  const [showRecipe, setShowRecipe] = React.useState<string | null>(null);
+export const HomeScreen = ({ navigation }: HomeScreenProps) => {
+  const { data: allRecipes } = trpc.recipe.all.useQuery();
+  const { data: ingredients, isSuccess: areIngredientsSuccess } =
+    trpc.helper.allIngredients.useQuery();
+  const { data: units, isSuccess: areUnitsSuccess } =
+    trpc.helper.allUnits.useQuery();
+
+  if (!areIngredientsSuccess || !areUnitsSuccess) {
+    return <Text>Loading...</Text>;
+  }
 
   return (
-    <View className="h-full w-full bg-white p-4">
-      <View className="flex flex-row items-center justify-between gap-2">
+    <View className="h-full w-full px-6 py-2">
+      <View className="mb-4 flex flex-row items-center justify-between gap-x-2">
         <Text className="pb-2 text-2xl font-semibold text-black">
-          Zapisane Przepisy:
+          Saved Recipes
         </Text>
+
         <TouchableOpacity
-          activeOpacity={0.5}
+          className="w-max rounded-md border border-gray-300 bg-white"
           onPressOut={() => navigation.navigate("CreateRecipe")}
         >
-          <View className="rounded-full bg-blue-500 p-2 focus:bg-red-500 ">
-            <Add className="text-blue-200" />
+          <View className="flex h-9 w-max items-center justify-center px-3 text-sm font-medium">
+            <Text className="text-lg font-medium">Create Recipe</Text>
           </View>
         </TouchableOpacity>
       </View>
 
-      <View className="py-2">
-        {showRecipe ? (
-          <Text className="text-black">
-            <Text className="font-semibold">Selected post:</Text>
-            {showRecipe}
-          </Text>
-        ) : (
-          <Text className="font-semibold italic text-white">
-            Press on a post
-          </Text>
-        )}
-      </View>
-
       <FlashList
-        data={recipeQuery.data}
+        data={allRecipes}
         estimatedItemSize={20}
-        ItemSeparatorComponent={() => <View className="h-2" />}
-        renderItem={(p) => (
-          <TouchableOpacity onPress={() => setShowRecipe(p.item.id)}>
-            <RecipeCard recipe={p.item} />
-          </TouchableOpacity>
+        ItemSeparatorComponent={() => <View className="h-4" />}
+        renderItem={({ item }) => (
+          <RecipeCard recipe={item} ingredients={ingredients} units={units} />
         )}
       />
     </View>

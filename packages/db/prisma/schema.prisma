@@ -19,7 +19,7 @@ model User {
 model Recipe {
     id           String @id @default(cuid())
     name         String
-    instructions String
+    instructions RecipeInstruction[]
     authorId     String
     ingredients  RecipeIngredient[]
     users        User[]
@@ -40,6 +40,16 @@ model RecipeIngredient {
     amount     Float
     ingredientId String
     unitId     String
+    recipe     Recipe @relation(fields: [recipeId], references: [id])
+    recipeId   String
+
+    @@index([recipeId])
+}
+
+model RecipeInstruction {
+    id         String @id @default(cuid())
+    step       Int
+    instruction String
     recipe     Recipe @relation(fields: [recipeId], references: [id])
     recipeId   String
 
