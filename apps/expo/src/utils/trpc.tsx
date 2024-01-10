@@ -27,8 +27,10 @@ const getBaseUrl = () => {
    * you don't have anything else running on it, or you'd have to change it.
    */
   const localhost = Constants.manifest?.debuggerHost?.split(":")[0];
-  if (!localhost)
-    throw new Error("failed to get localhost, configure it manually");
+  if (!localhost) {
+    return "https://przepisne.vercel.app";
+  }
+
   return `http://${localhost}:3000`;
 };
 
