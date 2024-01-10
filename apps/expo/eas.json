@@ -11,6 +11,9 @@
       "distribution": "internal"
     },
     "production": {
+      "android": {
+        "buildType": "apk"
+      },
       "pnpm": "8.9.2",
       "node": "18.14.2"
     }
