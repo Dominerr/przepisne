@@ -1,19 +1,26 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import { Text, TextInput, TouchableOpacity, View, Modal } from "react-native";
+import {
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  Modal,
+  ScrollView,
+} from "react-native";
 import { useUser } from "@clerk/clerk-expo";
 
 import { trpc } from "../utils/trpc";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, get } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import ArrowLeft from "../assets/icons/ArrowLeft";
-import Search from "../assets/icons/Search";
 import { FlashList } from "@shopify/flash-list";
-import { LinearGradient } from "expo-linear-gradient";
 import Delete from "../assets/icons/Delete";
 import { RecipeForm, recipeSchema } from "../api/recipe";
+import { CustomTextInput } from "./CustomTextInput";
 
 export const CreateRecipe = () => {
+  const instructionsInputRefs = useRef<TextInput[]>([]);
+
   const utils = trpc.useContext();
   const [ingredientsModalVisible, setIngredientsModalVisible] = useState(false);
   const [mode, setMode] = useState<"create" | "edit">("create");
@@ -48,6 +55,8 @@ export const CreateRecipe = () => {
     },
   });
 
+  const prevLengthRef = useRef(watch("instructions").length);
+
   const { mutate: addRecipe } = trpc.recipe.create.useMutation({
     async onSuccess() {
       reset();
@@ -73,12 +82,18 @@ export const CreateRecipe = () => {
     },
   });
 
+  useEffect(() => {
+    const currentLength = watch("instructions").length;
+    if (currentLength > prevLengthRef.current) {
+      instructionsInputRefs.current[currentLength - 1]?.focus();
+    }
+    prevLengthRef.current = currentLength;
+  }, [watch("instructions").length]);
+
   const disabled =
     !ingredientWatch("amount") ||
     !ingredientWatch("unitId") ||
     !ingredientWatch("ingredientId");
-
-  console.log(errors);
 
   const onSubmit = handleSubmit((data) => {
     addRecipe({
@@ -106,7 +121,7 @@ export const CreateRecipe = () => {
 
   return (
     <>
-      <View className="flex bg-gray-100 p-2">
+      <ScrollView className="flex overflow-scroll bg-gray-100 p-2">
         <View className="bg-card w-full max-w-md rounded-lg border border-gray-300 bg-white p-6 shadow-sm">
           <View className="flex flex-col space-y-1.5 pb-4">
             <Text className="text-2xl font-semibold leading-none tracking-tight">
@@ -117,50 +132,36 @@ export const CreateRecipe = () => {
             <Controller
               control={control}
               render={({ field: { onChange, value } }) => (
-                <View className="space-y-2">
-                  <Text className="text-sm font-medium leading-none">
-                    Recipe name
-                  </Text>
-                  <View className="mb-2">
-                    <TextInput
-                      className="rounded border border-gray-300 p-2 text-black focus:border-gray-500"
-                      onChangeText={onChange}
-                      value={value}
-                      placeholder="Enter recipe name"
-                    />
-                    {errors.name && (
-                      <Text className="text-sm font-medium leading-none text-red-500">
-                        Recipe name is required
-                      </Text>
-                    )}
-                  </View>
-                </View>
+                <CustomTextInput
+                  label="Recipe name"
+                  placeholder="Enter recipe name"
+                  error={!!errors.name}
+                  errorMessage="Recipe name is required"
+                  onChangeText={onChange}
+                  value={value}
+                />
               )}
               name="name"
               rules={{ required: true }}
             />
-
-            {nonEmptyInstructions.length > 0 && (
-              <View className="my-2 h-[150px] rounded bg-gray-200 p-2">
-                <FlashList
-                  data={nonEmptyInstructions}
-                  numColumns={1}
-                  estimatedItemSize={8}
-                  renderItem={({ item, index }) => {
-                    return (
-                      <View className="flex flex-row gap-x-2">
-                        <Text className="text-md font-semibold text-black">
-                          {`${index + 1}. `}
-                        </Text>
-                        <Text className="text-md text-justify italic text-black">
-                          {item.instruction}
-                        </Text>
-                      </View>
-                    );
-                  }}
-                />
+            <View>
+              <Text className="text-sm font-medium">Instructions</Text>
+              <View className="my-2 w-full rounded p-2">
+                {(nonEmptyInstructions || []).map((item, index) => (
+                  <View
+                    key={item.instruction + index}
+                    className="flex flex-row"
+                  >
+                    <Text className="text-md font-semibold text-black">
+                      {`${index + 1}. `}
+                    </Text>
+                    <Text className="text-md flex-1 text-justify italic text-black">
+                      {item.instruction}
+                    </Text>
+                  </View>
+                ))}
               </View>
-            )}
+            </View>
 
             {watch("instructions")?.length === 0 ? (
               <TouchableOpacity
@@ -189,6 +190,70 @@ export const CreateRecipe = () => {
               </TouchableOpacity>
             )}
           </View>
+
+          <View>
+            <Text className="text-sm font-medium">Ingredients</Text>
+            <View className="my-2 w-full rounded p-2">
+              {(getValues("ingredients") || []).map((item, index) => (
+                <View
+                  key={`${item.ingredientId} ${item.unitId} ${index}`}
+                  className="flex w-full flex-row items-center justify-center"
+                >
+                  <TouchableOpacity
+                    onPress={() => {
+                      ingredientSetValue("amount", item.amount);
+                      ingredientSetValue("unitId", item.unitId);
+                      ingredientSetValue("ingredientId", item.ingredientId);
+                      setMode("edit");
+                      setIngredientInputVisible("amount");
+                      setIngredientsModalVisible(true);
+                      indexToEdit = index;
+                    }}
+                  >
+                    <Text className="text-md mx-1 my-2 min-w-[60px] rounded-lg border border-teal-200 p-2 text-center font-medium">
+                      {item.amount}
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => {
+                      ingredientSetValue("amount", item.amount);
+                      ingredientSetValue("unitId", item.unitId);
+                      ingredientSetValue("ingredientId", item.ingredientId);
+                      setMode("edit");
+                      setIngredientInputVisible("unit");
+                      setIngredientsModalVisible(true);
+                      indexToEdit = index;
+                    }}
+                  >
+                    <Text className="text-md mx-1 my-2 min-w-[60px] rounded-lg border border-teal-200 p-2 text-center font-medium">
+                      {unitsAll.find(({ id }) => id === item.unitId)?.name}
+                    </Text>
+                  </TouchableOpacity>
+                  <Text className="mx-1 my-2">of</Text>
+                  <TouchableOpacity
+                    onPress={() => {
+                      ingredientSetValue("amount", item.amount);
+                      ingredientSetValue("unitId", item.unitId);
+                      ingredientSetValue("ingredientId", item.ingredientId);
+                      setMode("edit");
+                      setIngredientInputVisible("ingredient");
+                      setIngredientsModalVisible(true);
+                      indexToEdit = index;
+                    }}
+                  >
+                    <Text className="text-md mx-1 my-2 min-w-[60px] rounded-lg border border-teal-200 p-2 text-center font-medium">
+                      {
+                        ingredientsAll.find(
+                          ({ id }) => id === item.ingredientId,
+                        )?.name
+                      }
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+          </View>
+
           <View>
             <TouchableOpacity
               className="flex flex-row items-center justify-center rounded bg-teal-500 p-2"
@@ -204,94 +269,7 @@ export const CreateRecipe = () => {
               </Text>
             )}
           </View>
-          {getValues("ingredients").map((i, index) => {
-            return (
-              <View className="my-2 flex flex-row items-center gap-x-2">
-                <TouchableOpacity
-                  onPress={() => {
-                    ingredientSetValue("amount", i.amount);
-                    ingredientSetValue("unitId", i.unitId);
-                    ingredientSetValue("ingredientId", i.ingredientId);
-                    setMode("edit");
-                    setIngredientInputVisible("amount");
-                    setIngredientsModalVisible(true);
-                    indexToEdit = index;
-                  }}
-                  className={`min-w-[40px] flex-1 justify-center bg-green-500 p-2`}
-                  style={{
-                    shadowColor: "#000",
-                    shadowOffset: {
-                      width: 0,
-                      height: 2,
-                    },
-                    shadowOpacity: 1,
-                    shadowRadius: 8,
-                    elevation: 12,
-                  }}
-                >
-                  <Text className="text-md text-center font-medium text-white">
-                    {i.amount?.toString().toLocaleUpperCase()}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => {
-                    ingredientSetValue("amount", i.amount);
-                    ingredientSetValue("unitId", i.unitId);
-                    ingredientSetValue("ingredientId", i.ingredientId);
-                    setMode("edit");
-                    setIngredientInputVisible("unit");
-                    setIngredientsModalVisible(true);
-                    indexToEdit = index;
-                  }}
-                  className={`min-w-[40px] flex-1 justify-center bg-violet-500 p-2`}
-                  style={{
-                    shadowColor: "#000",
-                    shadowOffset: {
-                      width: 0,
-                      height: 2,
-                    },
-                    shadowOpacity: 1,
-                    shadowRadius: 8,
-                    elevation: 12,
-                  }}
-                >
-                  <Text className="text-md text-center font-medium text-white">
-                    {unitsAll
-                      .find(({ id }) => id === i.unitId)
-                      ?.name.toLocaleUpperCase()}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => {
-                    ingredientSetValue("amount", i.amount);
-                    ingredientSetValue("unitId", i.unitId);
-                    ingredientSetValue("ingredientId", i.ingredientId);
-                    setMode("edit");
-                    setIngredientInputVisible("ingredient");
-                    setIngredientsModalVisible(true);
-                    indexToEdit = index;
-                  }}
-                  className={`min-w-[40px] flex-1 justify-center bg-teal-500 p-2`}
-                  style={{
-                    shadowColor: "#000",
-                    shadowOffset: {
-                      width: 0,
-                      height: 2,
-                    },
-                    shadowOpacity: 1,
-                    shadowRadius: 8,
-                    elevation: 12,
-                  }}
-                >
-                  <Text className="text-md text-center font-medium text-white">
-                    {ingredientsAll
-                      .find(({ id }) => id === i.ingredientId)
-                      ?.name.toLocaleUpperCase()}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            );
-          })}
+
           <TouchableOpacity
             className="mb-0 mt-6 flex flex-row items-center justify-center rounded bg-teal-700 p-2"
             onPress={onSubmit}
@@ -301,7 +279,7 @@ export const CreateRecipe = () => {
             </Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </ScrollView>
       <Modal
         animationType="slide"
         visible={instructionsModalVisible}
@@ -309,36 +287,39 @@ export const CreateRecipe = () => {
           setInstructionsModalVisible((prev) => !prev);
         }}
       >
-        <View className="flex bg-gray-100 p-2 pt-5">
-          <View className="bg-card w-full max-w-md gap-y-4 rounded-lg border border-gray-300 bg-white p-6 shadow-sm">
-            <View className="flex flex-col space-y-1.5 pb-4">
-              <Text className="text-2xl font-semibold leading-none tracking-tight">
-                Edit instructions
-              </Text>
-            </View>
-            <View className="h-[600px] w-full space-y-8">
-              <FlashList
-                data={[...watch("instructions")]}
-                numColumns={1}
-                estimatedItemSize={8}
-                renderItem={({ index }) => {
-                  return (
-                    <Controller
-                      control={control}
-                      render={({ field: { onChange, value } }) => (
-                        <View className="mb-2 space-y-2">
-                          <Text className="text-sm font-medium leading-none">
-                            Step {index + 1}
-                          </Text>
-                          <View className="flex flex-row items-center justify-between gap-x-2 ">
-                            <TextInput
-                              className="flex-1 rounded border border-gray-300 p-2 text-black focus:border-gray-500"
-                              onChangeText={onChange}
-                              value={value}
-                              placeholder="Enter instruction"
-                            />
+        <View className="flex h-full bg-gray-100 p-4">
+          <View className="bg-card flex h-full w-full max-w-md justify-between rounded-lg border border-gray-300 bg-white p-6 shadow-sm">
+            <View className="flex-shrink">
+              <View className="flex flex-col space-y-1.5 pb-4">
+                <Text className="text-2xl font-semibold leading-none tracking-tight">
+                  Edit instructions
+                </Text>
+              </View>
+              <View className="h-[375px] w-full space-y-8">
+                <FlashList
+                  data={[...watch("instructions")]}
+                  numColumns={1}
+                  estimatedItemSize={8}
+                  renderItem={({ index }) => {
+                    return (
+                      <Controller
+                        control={control}
+                        render={({ field: { onChange, value } }) => (
+                          <View className="w-full flex-row items-end justify-between gap-x-2">
+                            <View className="flex-1">
+                              <CustomTextInput
+                                ref={(ref) => {
+                                  instructionsInputRefs.current[index] =
+                                    ref as TextInput;
+                                }}
+                                placeholder="Enter instruction"
+                                label={`Step ${index + 1}`}
+                                onChangeText={onChange}
+                                value={value}
+                              />
+                            </View>
                             <TouchableOpacity
-                              className="w-min "
+                              className="mb-[10px] w-min"
                               onPress={() => {
                                 setValue(
                                   "instructions",
@@ -351,14 +332,14 @@ export const CreateRecipe = () => {
                               <Delete className="h-10 w-10  text-red-300" />
                             </TouchableOpacity>
                           </View>
-                        </View>
-                      )}
-                      name={`instructions.${index}.instruction`}
-                      rules={{ required: true }}
-                    />
-                  );
-                }}
-              />
+                        )}
+                        name={`instructions.${index}.instruction`}
+                        rules={{ required: true }}
+                      />
+                    );
+                  }}
+                />
+              </View>
             </View>
             <View className="flex items-end">
               <TouchableOpacity
@@ -386,143 +367,99 @@ export const CreateRecipe = () => {
           setIngredientsModalVisible((prev) => !prev);
         }}
       >
-        <View className="flex h-full w-full justify-between">
-          <View className="flex h-full w-full flex-shrink">
-            {ingredientInputVisible === "ingredient" && (
-              <>
-                <View className="flex w-full items-center gap-y-2 overflow-auto border-b border-black">
-                  <View className="relative flex w-full flex-row items-center justify-center ">
-                    <TouchableOpacity
-                      className="absolute left-0 p-2"
-                      onPress={() => {
-                        setIngredientsModalVisible((prev) => !prev);
-                      }}
-                    >
-                      <ArrowLeft className="text-black" />
-                    </TouchableOpacity>
-
-                    <Text className="text-lg font-medium text-black">
-                      Add Ingredient
+        <View className="flex h-full bg-gray-100 p-4">
+          <View className="bg-card flex h-full w-full max-w-md justify-between rounded-lg border border-gray-300 bg-white p-6 shadow-sm">
+            <View className="flex-shrink">
+              {ingredientInputVisible === "amount" && (
+                <>
+                  <View className="flex flex-col space-y-1.5 pb-4">
+                    <Text className="text-2xl font-semibold leading-none tracking-tight">
+                      Edit ingredients
                     </Text>
                   </View>
-                  <View className="relative flex h-20 w-full items-center justify-center p-4">
-                    <Search className="absolute top-[28px] left-7 z-10 text-black" />
-                    <TextInput
-                      placeholder="Search for ingredient"
-                      className="h-full w-full rounded-lg border border-gray-600 pr-4 pl-12 text-lg"
+                  <View className="h-[375px] w-full space-y-8">
+                    <Controller
+                      control={ingredientControl}
+                      render={({ field: { onChange, value } }) => (
+                        <CustomTextInput
+                          keyboardType="phone-pad"
+                          onSubmitEditing={() => {
+                            setIngredientInputVisible("unit");
+                          }}
+                          onChangeText={(value) => {
+                            onChange(value.replace(/[^0-9]/g, ""));
+                          }}
+                          value={value?.toString().replace(/[^0-9]/g, "")}
+                          placeholder="Enter the amount"
+                          label="Amount"
+                        />
+                      )}
+                      name="amount"
+                      rules={{ required: true }}
                     />
                   </View>
-                </View>
-                <View className="w-full flex-1 overflow-auto">
-                  <LinearGradient
-                    colors={[
-                      "transparent",
-                      "rgb(255 237 213)",
-                      "rgb(254 215 170)",
-                    ]}
-                    locations={[0.01, 0.05, 1]}
-                    className="w-full flex-1"
-                  >
-                    <View className="flex w-full flex-1 flex-row flex-wrap items-center overflow-auto  pt-4">
-                      <FlashList
-                        data={[...ingredientsAll]}
-                        numColumns={2}
-                        estimatedItemSize={32}
-                        renderItem={({ item }) => (
-                          <View
-                            key={item.id}
-                            className={`mx-auto flex items-center self-center`}
-                          >
-                            <TouchableOpacity
-                              onPress={() => {
-                                ingredientSetValue("ingredientId", item.id);
-                              }}
-                              className="my-2 flex h-16 w-32 justify-center rounded-xl bg-slate-600"
-                              style={{
-                                shadowColor: "#000",
-                                shadowOffset: {
-                                  width: 0,
-                                  height: 2,
-                                },
-                                shadowOpacity: 1,
-                                shadowRadius: 8,
-                                elevation: 12,
-                              }}
-                            >
-                              <Text className="text-center text-lg font-medium text-white">
-                                {item.name.toLocaleUpperCase()}
-                              </Text>
-                            </TouchableOpacity>
-                          </View>
-                        )}
-                      />
-                    </View>
-                  </LinearGradient>
-                </View>
-              </>
-            )}
+                </>
+              )}
 
-            {ingredientInputVisible === "unit" && (
-              <>
-                <View className="relative flex w-full items-center gap-y-2 overflow-auto pt-8 pb-2">
-                  <LinearGradient
-                    colors={["rgba(0,0,0,0.1)", "transparent"]}
-                    locations={[0.2, 1]}
-                    style={{
-                      position: "absolute",
-                      bottom: -25,
-                      left: 0,
-                      right: 0,
-                      height: 10,
-                    }}
-                  />
-                  <View className="flex w-full flex-row items-center justify-center ">
-                    <Text className="text-lg font-medium text-black">
-                      Select Unit
+              {ingredientInputVisible === "unit" && (
+                <>
+                  <View className="flex flex-col space-y-1.5 pb-4">
+                    <Text className="text-2xl font-semibold leading-none tracking-tight">
+                      Edit ingredients
                     </Text>
                   </View>
-                </View>
+                  <View className="w-full space-y-8">
+                    <Controller
+                      control={ingredientControl}
+                      render={({ field: { onChange, value } }) => (
+                        <CustomTextInput
+                          keyboardType="phone-pad"
+                          onSubmitEditing={() => {
+                            setIngredientInputVisible("unit");
+                          }}
+                          onChangeText={(value) => {
+                            onChange(value.replace(/[^0-9]/g, ""));
+                          }}
+                          value={value?.toString().replace(/[^0-9]/g, "")}
+                          placeholder="Search for unit"
+                          label="Select unit"
+                        />
+                      )}
+                      name="amount"
+                      rules={{ required: true }}
+                    />
+                  </View>
 
-                <LinearGradient
-                  colors={[
-                    "transparent",
-                    "rgb(255 237 213)",
-                    "rgb(254 215 170)",
-                  ]}
-                  locations={[0.01, 0.05, 1]}
-                  className="w-full flex-1"
-                >
-                  <View className="flex w-full flex-1 flex-row flex-wrap items-center overflow-auto  pt-4">
+                  <View className="mt-4 flex h-[400px] w-full">
                     <FlashList
                       data={[...unitsAll]}
                       numColumns={2}
-                      estimatedItemSize={32}
+                      estimatedItemSize={8}
                       renderItem={({ item }) => {
                         return (
-                          <View
-                            key={item.id}
-                            className={`mx-auto flex items-center self-center`}
-                          >
+                          <View key={item.id} className="my-1">
                             <TouchableOpacity
+                              activeOpacity={0.6}
                               onPress={() => {
                                 ingredientSetValue("unitId", item.id);
-
-                                setIngredientInputVisible("ingredient");
                               }}
-                              className="my-2 flex h-16 w-32 justify-center rounded-xl bg-slate-600"
-                              style={{
-                                shadowColor: "#000",
-                                shadowOffset: {
-                                  width: 0,
-                                  height: 2,
-                                },
-                                shadowOpacity: 1,
-                                shadowRadius: 8,
-                                elevation: 12,
-                              }}
+                              className="flex flex-row items-center p-3"
                             >
-                              <Text className="text-center text-lg font-medium text-white">
-                                {item.name.toLocaleUpperCase()}
+                              <View
+                                className={`mr-2 h-1 w-1 rounded-full ${
+                                  ingredientWatch("unitId") === item.id
+                                    ? "bg-teal-500"
+                                    : "bg-black"
+                                }`}
+                              />
+                              <Text
+                                className={`text-md text-center text-black ${
+                                  ingredientWatch("unitId") === item.id
+                                    ? "font-bold text-teal-500"
+                                    : "text-black"
+                                }`}
+                              >
+                                {item.name}
                               </Text>
                             </TouchableOpacity>
                           </View>
@@ -530,199 +467,191 @@ export const CreateRecipe = () => {
                       }}
                     />
                   </View>
-                </LinearGradient>
-              </>
-            )}
-            {ingredientInputVisible === "amount" && (
-              <View className="flex w-full items-center gap-2 py-8">
-                <View className="relative flex w-full flex-row items-center justify-center ">
-                  <Text className="text-lg font-medium text-black">Amount</Text>
-                </View>
-                <View className="relative flex h-20 w-full items-center justify-center p-4">
-                  <Controller
-                    control={ingredientControl}
-                    render={({ field: { onChange, value } }) => (
-                      <TextInput
-                        keyboardType="phone-pad"
-                        onSubmitEditing={() => {
-                          setIngredientInputVisible("unit");
-                        }}
-                        className="h-full w-full rounded-lg border border-gray-600 px-4 text-lg"
-                        onChangeText={(value) => {
-                          onChange(value.replace(/[^0-9]/g, ""));
-                        }}
-                        value={value?.toString().replace(/[^0-9]/g, "")}
-                        placeholder="Amount"
-                      />
-                    )}
-                    name="amount"
-                    rules={{ required: true }}
-                  />
-                </View>
-              </View>
-            )}
-          </View>
+                </>
+              )}
 
-          <View className="relative flex h-32 w-full items-center px-4 pt-4">
-            <LinearGradient
-              colors={["transparent", "rgba(0,0,0,0.1)"]}
-              locations={[0.5, 1]}
-              style={{
-                position: "absolute",
-                top: -10,
-                left: 0,
-                right: 0,
-                height: 10,
-              }}
-            />
-            <View className="flex w-full items-center rounded-lg bg-orange-500 px-4 py-2">
-              <View className="mb-2 flex flex-row items-center gap-x-2">
-                <TouchableOpacity
-                  onPress={() => {
-                    setIngredientInputVisible("amount");
-                  }}
-                  className={`min-w-[40px] flex-1 justify-center bg-green-500 p-2`}
-                  style={{
-                    shadowColor: "#000",
-                    shadowOffset: {
-                      width: 0,
-                      height: 2,
-                    },
-                    shadowOpacity: 1,
-                    shadowRadius: 8,
-                    elevation: 12,
-                  }}
-                >
-                  <Text className="text-md text-center font-medium text-white">
-                    {ingredientWatch("amount") || "AMOUNT"}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => {
-                    setIngredientInputVisible("unit");
-                  }}
-                  className={`min-w-[40px] flex-1 justify-center bg-violet-500 p-2`}
-                  style={{
-                    shadowColor: "#000",
-                    shadowOffset: {
-                      width: 0,
-                      height: 2,
-                    },
-                    shadowOpacity: 1,
-                    shadowRadius: 8,
-                    elevation: 12,
-                  }}
-                >
-                  <Text className="text-md text-center font-medium text-white">
-                    {unitsAll
-                      .find(({ id }) => id === ingredientWatch("unitId"))
-                      ?.name.toLocaleUpperCase() || "UNIT"}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => {
-                    setIngredientInputVisible("ingredient");
-                  }}
-                  className={`min-w-[40px] flex-1 justify-center bg-teal-500 p-2`}
-                  style={{
-                    shadowColor: "#000",
-                    shadowOffset: {
-                      width: 0,
-                      height: 2,
-                    },
-                    shadowOpacity: 1,
-                    shadowRadius: 8,
-                    elevation: 12,
-                  }}
-                >
-                  <Text className="text-md text-center font-medium text-white">
-                    {ingredientsAll
-                      .find(({ id }) => id === ingredientWatch("ingredientId"))
-                      ?.name.toLocaleUpperCase() || "INGREDIENT"}
-                  </Text>
-                </TouchableOpacity>
-              </View>
+              {ingredientInputVisible === "ingredient" && (
+                <>
+                  <View className="flex flex-col space-y-1.5 pb-4">
+                    <Text className="text-2xl font-semibold leading-none tracking-tight">
+                      Edit ingredients
+                    </Text>
+                  </View>
+                  <View className="w-full space-y-8">
+                    <Controller
+                      control={ingredientControl}
+                      render={({ field: { onChange, value } }) => (
+                        <CustomTextInput
+                          keyboardType="phone-pad"
+                          onSubmitEditing={() => {
+                            setIngredientInputVisible("unit");
+                          }}
+                          onChangeText={(value) => {
+                            onChange(value.replace(/[^0-9]/g, ""));
+                          }}
+                          value={value?.toString().replace(/[^0-9]/g, "")}
+                          placeholder="Search for ingredient"
+                          label="Select ingredient"
+                        />
+                      )}
+                      name="amount"
+                      rules={{ required: true }}
+                    />
+                  </View>
 
-              {mode === "create" && (
-                <View className="flex flex-row gap-x-2">
+                  <View className="mt-4 flex h-[400px] w-full">
+                    <FlashList
+                      data={[...ingredientsAll]}
+                      numColumns={2}
+                      estimatedItemSize={32}
+                      renderItem={({ item }) => (
+                        <View key={item.id} className="my-1">
+                          <TouchableOpacity
+                            activeOpacity={0.6}
+                            onPress={() => {
+                              ingredientSetValue("ingredientId", item.id);
+                            }}
+                            className="flex flex-row items-center p-3"
+                          >
+                            <View
+                              className={`mr-2 h-1 w-1 rounded-full ${
+                                ingredientWatch("ingredientId") === item.id
+                                  ? "bg-teal-500"
+                                  : "bg-black"
+                              }`}
+                            />
+                            <Text
+                              className={`text-md text-center text-black ${
+                                ingredientWatch("ingredientId") === item.id
+                                  ? "font-bold text-teal-500"
+                                  : "text-black"
+                              }`}
+                            >
+                              {item.name}
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      )}
+                    />
+                  </View>
+                </>
+              )}
+            </View>
+
+            <View className="relative flex w-full items-center">
+              <View className="flex w-full items-center">
+                <View className="mb-2 flex flex-row items-center gap-x-2">
                   <TouchableOpacity
-                    disabled={disabled}
                     onPress={() => {
-                      setValue(`ingredients.${numberOfIngredients}`, {
-                        amount: Number(ingredientWatch("amount") || 0),
-                        ingredientId: ingredientWatch("ingredientId"),
-                        unitId: ingredientWatch("unitId"),
-                      });
-                      setIngredientsModalVisible(false);
-                      ingredientReset();
                       setIngredientInputVisible("amount");
                     }}
-                    className={`min-w-[40px] justify-center rounded-xl p-2 ${
-                      disabled ? "bg-slate-400" : "bg-blue-400"
-                    }`}
                   >
-                    <Text className="text-lg font-bold text-white">
-                      SAVE AND RETURN
+                    <Text className="text-md min-w-[60px] rounded-lg border border-teal-200 p-2 text-center font-medium">
+                      {ingredientWatch("amount") || "..."}
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    disabled={disabled}
                     onPress={() => {
-                      setValue(`ingredients.${numberOfIngredients}`, {
-                        amount: Number(ingredientWatch("amount") || 0),
-                        ingredientId: ingredientWatch("ingredientId"),
-                        unitId: ingredientWatch("unitId"),
-                      });
-                      ingredientReset();
-                      setIngredientInputVisible("amount");
+                      setIngredientInputVisible("unit");
                     }}
-                    className={`min-w-[40px]  justify-center rounded-xl ${
-                      disabled ? "bg-slate-700" : "bg-blue-700"
-                    } p-2`}
                   >
-                    <Text className="text-lg font-bold text-white">
-                      ADD NEXT
+                    <Text className="text-md min-w-[60px] rounded-lg border border-teal-200 p-2 text-center font-medium">
+                      {unitsAll.find(
+                        ({ id }) => id === ingredientWatch("unitId"),
+                      )?.name || "..."}
+                    </Text>
+                  </TouchableOpacity>
+                  <Text>of</Text>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setIngredientInputVisible("ingredient");
+                    }}
+                  >
+                    <Text className="text-md min-w-[60px] rounded-lg border border-teal-200 p-2 text-center font-medium">
+                      {ingredientsAll.find(
+                        ({ id }) => id === ingredientWatch("ingredientId"),
+                      )?.name || "..."}
                     </Text>
                   </TouchableOpacity>
                 </View>
-              )}
-              {mode === "edit" && (
-                <View className="flex flex-row gap-x-2">
-                  <TouchableOpacity
-                    disabled={disabled}
-                    onPress={() => {
-                      setIngredientsModalVisible(false);
-                      setMode("create");
-                      ingredientReset();
-                      setIngredientInputVisible("amount");
-                    }}
-                    className={`min-w-[40px] justify-center rounded-xl p-2 ${
-                      disabled ? "bg-slate-400" : "bg-blue-400"
-                    }`}
-                  >
-                    <Text className="text-lg font-bold text-white">CANCEL</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    disabled={disabled}
-                    onPress={() => {
-                      setValue(`ingredients.${indexToEdit}`, {
-                        amount: Number(ingredientWatch("amount") || 0),
-                        ingredientId: ingredientWatch("ingredientId"),
-                        unitId: ingredientWatch("unitId"),
-                      });
-                      setIngredientsModalVisible(false);
-                      setMode("create");
-                      ingredientReset();
-                      setIngredientInputVisible("amount");
-                    }}
-                    className={`min-w-[40px]  justify-center rounded-xl ${
-                      disabled ? "bg-slate-700" : "bg-blue-700"
-                    } p-2`}
-                  >
-                    <Text className="text-lg font-bold text-white">UPDATE</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
+
+                {mode === "create" && (
+                  <View className="flex flex-row gap-x-2">
+                    <TouchableOpacity
+                      disabled={disabled}
+                      onPress={() => {
+                        setValue(`ingredients.${numberOfIngredients}`, {
+                          amount: Number(ingredientWatch("amount") || 0),
+                          ingredientId: ingredientWatch("ingredientId"),
+                          unitId: ingredientWatch("unitId"),
+                        });
+                        setIngredientsModalVisible(false);
+                        ingredientReset();
+                        setIngredientInputVisible("amount");
+                      }}
+                      className={`flex-1 items-center rounded-xl border border-gray-300 py-2 ${
+                        disabled ? "opacity-30" : "opacity-100"
+                      }`}
+                    >
+                      <Text className="text-md font-medium">Save</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      disabled={disabled}
+                      onPress={() => {
+                        setValue(`ingredients.${numberOfIngredients}`, {
+                          amount: Number(ingredientWatch("amount") || 0),
+                          ingredientId: ingredientWatch("ingredientId"),
+                          unitId: ingredientWatch("unitId"),
+                        });
+                        ingredientReset();
+                        setIngredientInputVisible("amount");
+                      }}
+                      className={`flex-1 items-center rounded-xl border border-gray-300 py-2 ${
+                        disabled ? "opacity-30" : "opacity-100"
+                      }`}
+                    >
+                      <Text className="text-md font-medium">Add another</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+                {mode === "edit" && (
+                  <View className="flex flex-row gap-x-2">
+                    <TouchableOpacity
+                      disabled={disabled}
+                      onPress={() => {
+                        setValue(`ingredients.${indexToEdit}`, {
+                          amount: Number(ingredientWatch("amount") || 0),
+                          ingredientId: ingredientWatch("ingredientId"),
+                          unitId: ingredientWatch("unitId"),
+                        });
+                        setIngredientsModalVisible(false);
+                        setMode("create");
+                        ingredientReset();
+                        setIngredientInputVisible("amount");
+                      }}
+                      className={`flex-1 items-center rounded-xl border border-gray-300 py-2 ${
+                        disabled ? "opacity-30" : "opacity-100"
+                      }`}
+                    >
+                      <Text className="text-md font-medium">Update</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      disabled={disabled}
+                      onPress={() => {
+                        setIngredientsModalVisible(false);
+                        setMode("create");
+                        ingredientReset();
+                        setIngredientInputVisible("amount");
+                      }}
+                      className={`flex-1 items-center rounded-xl border border-gray-300 py-2 ${
+                        disabled ? "opacity-30" : "opacity-100"
+                      }`}
+                    >
+                      <Text className="text-md font-medium">Cancel</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
             </View>
           </View>
         </View>

@@ -15,7 +15,9 @@ export const RecipeCard: React.FC<{
   return (
     <View className="rounded-lg border border-gray-300 bg-white p-4">
       <View className="flex flex-row items-center">
-        <Text className="text-2xl font-bold leading-6">{recipe.name}</Text>
+        <Text className="flex-1 text-2xl font-bold leading-6">
+          {recipe.name}
+        </Text>
 
         <View className="ml-auto flex flex-row items-center">
           <Clock className="mr-2 text-slate-600" />
