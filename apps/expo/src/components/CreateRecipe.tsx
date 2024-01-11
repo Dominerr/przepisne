@@ -12,7 +12,7 @@ import {
 import { useUser } from "@clerk/clerk-expo";
 
 import { trpc } from "../utils/trpc";
-import { useForm, Controller, get, set } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FlashList } from "@shopify/flash-list";
 import Delete from "../assets/icons/Delete";
@@ -151,15 +151,19 @@ export const CreateRecipe = () => {
     prevLengthRef.current = currentLength;
   }, [watch("instructions").length]);
 
+  const nonEmptyInstructions = watch("instructions").filter(
+    ({ instruction }) => instruction !== "",
+  );
+
   const disabled =
     !ingredientWatch("amount") ||
     !ingredientWatch("unitId") ||
     !ingredientWatch("ingredientId");
 
-  const onSubmit = handleSubmit((data) => {
+  const onSubmit = handleSubmit(({ instructions, ...rest }) => {
     addRecipe({
-      ...data,
-      instructions: data.instructions.map((instruction, index) => {
+      ...rest,
+      instructions: nonEmptyInstructions.map((instruction, index) => {
         return {
           ...instruction,
           step: index + 1,
@@ -169,9 +173,7 @@ export const CreateRecipe = () => {
   });
 
   const numberOfIngredients = watch("ingredients").length;
-  const nonEmptyInstructions = watch("instructions").filter(
-    ({ instruction }) => instruction !== "",
-  );
+
   const isLastInstructionEmpty =
     watch("instructions")[watch("instructions").length - 1]?.instruction === "";
 
@@ -204,24 +206,26 @@ export const CreateRecipe = () => {
               name="name"
               rules={{ required: true }}
             />
-            <View>
-              <Text className="text-sm font-medium">Instructions</Text>
-              <View className="my-2 w-full rounded p-2">
-                {(nonEmptyInstructions || []).map((item, index) => (
-                  <View
-                    key={item.instruction + index}
-                    className="flex flex-row"
-                  >
-                    <Text className="text-md font-semibold text-black">
-                      {`${index + 1}. `}
-                    </Text>
-                    <Text className="text-md flex-1 text-justify italic text-black">
-                      {item.instruction}
-                    </Text>
-                  </View>
-                ))}
+            {nonEmptyInstructions.length > 0 && (
+              <View>
+                <Text className="text-sm font-medium">Instructions</Text>
+                <View className="my-2 w-full rounded p-2">
+                  {nonEmptyInstructions.map((item, index) => (
+                    <View
+                      key={item.instruction + index}
+                      className="flex flex-row"
+                    >
+                      <Text className="text-md font-semibold text-black">
+                        {`${index + 1}. `}
+                      </Text>
+                      <Text className="text-md flex-1 text-justify italic text-black">
+                        {item.instruction}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
               </View>
-            </View>
+            )}
 
             {watch("instructions")?.length === 0 ? (
               <TouchableOpacity
@@ -251,68 +255,70 @@ export const CreateRecipe = () => {
             )}
           </View>
 
-          <View>
-            <Text className="text-sm font-medium">Ingredients</Text>
-            <View className="my-2 w-full rounded p-2">
-              {(getValues("ingredients") || []).map((item, index) => (
-                <View
-                  key={`${item.ingredientId} ${item.unitId} ${index}`}
-                  className="flex w-full flex-row items-center justify-center"
-                >
-                  <TouchableOpacity
-                    onPress={() => {
-                      ingredientSetValue("amount", item.amount);
-                      ingredientSetValue("unitId", item.unitId);
-                      ingredientSetValue("ingredientId", item.ingredientId);
-                      setMode("edit");
-                      setIngredientInputVisible("amount");
-                      setIngredientsModalVisible(true);
-                      setIndexToEdit(index);
-                    }}
+          {getValues("ingredients").length > 0 && (
+            <View>
+              <Text className="text-sm font-medium">Ingredients</Text>
+              <View className="my-2 w-full rounded p-2">
+                {getValues("ingredients").map((item, index) => (
+                  <View
+                    key={`${item.ingredientId} ${item.unitId} ${index}`}
+                    className="flex w-full flex-row items-center justify-center"
                   >
-                    <Text className="text-md mx-1 my-2 min-w-[60px] rounded-lg border border-teal-200 p-2 text-center font-medium">
-                      {item.amount}
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => {
-                      ingredientSetValue("amount", item.amount);
-                      ingredientSetValue("unitId", item.unitId);
-                      ingredientSetValue("ingredientId", item.ingredientId);
-                      setMode("edit");
-                      setIngredientInputVisible("unit");
-                      setIngredientsModalVisible(true);
-                      setIndexToEdit(index);
-                    }}
-                  >
-                    <Text className="text-md mx-1 my-2 min-w-[60px] rounded-lg border border-teal-200 p-2 text-center font-medium">
-                      {unitsAll.find(({ id }) => id === item.unitId)?.name}
-                    </Text>
-                  </TouchableOpacity>
-                  <Text className="mx-1 my-2">of</Text>
-                  <TouchableOpacity
-                    onPress={() => {
-                      ingredientSetValue("amount", item.amount);
-                      ingredientSetValue("unitId", item.unitId);
-                      ingredientSetValue("ingredientId", item.ingredientId);
-                      setMode("edit");
-                      setIngredientInputVisible("ingredient");
-                      setIngredientsModalVisible(true);
-                      setIndexToEdit(index);
-                    }}
-                  >
-                    <Text className="text-md mx-1 my-2 min-w-[60px] rounded-lg border border-teal-200 p-2 text-center font-medium">
-                      {
-                        ingredientsAll.find(
-                          ({ id }) => id === item.ingredientId,
-                        )?.name
-                      }
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              ))}
+                    <TouchableOpacity
+                      onPress={() => {
+                        ingredientSetValue("amount", item.amount);
+                        ingredientSetValue("unitId", item.unitId);
+                        ingredientSetValue("ingredientId", item.ingredientId);
+                        setMode("edit");
+                        setIngredientInputVisible("amount");
+                        setIngredientsModalVisible(true);
+                        setIndexToEdit(index);
+                      }}
+                    >
+                      <Text className="text-md mx-1 my-2 min-w-[60px] rounded-lg border border-teal-200 p-2 text-center font-medium">
+                        {item.amount}
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        ingredientSetValue("amount", item.amount);
+                        ingredientSetValue("unitId", item.unitId);
+                        ingredientSetValue("ingredientId", item.ingredientId);
+                        setMode("edit");
+                        setIngredientInputVisible("unit");
+                        setIngredientsModalVisible(true);
+                        setIndexToEdit(index);
+                      }}
+                    >
+                      <Text className="text-md mx-1 my-2 min-w-[60px] rounded-lg border border-teal-200 p-2 text-center font-medium">
+                        {unitsAll.find(({ id }) => id === item.unitId)?.name}
+                      </Text>
+                    </TouchableOpacity>
+                    <Text className="mx-1 my-2">of</Text>
+                    <TouchableOpacity
+                      onPress={() => {
+                        ingredientSetValue("amount", item.amount);
+                        ingredientSetValue("unitId", item.unitId);
+                        ingredientSetValue("ingredientId", item.ingredientId);
+                        setMode("edit");
+                        setIngredientInputVisible("ingredient");
+                        setIngredientsModalVisible(true);
+                        setIndexToEdit(index);
+                      }}
+                    >
+                      <Text className="text-md mx-1 my-2 min-w-[60px] rounded-lg border border-teal-200 p-2 text-center font-medium">
+                        {
+                          ingredientsAll.find(
+                            ({ id }) => id === item.ingredientId,
+                          )?.name
+                        }
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
             </View>
-          </View>
+          )}
 
           <View>
             <TouchableOpacity
