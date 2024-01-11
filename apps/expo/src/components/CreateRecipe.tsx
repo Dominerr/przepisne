@@ -7,11 +7,12 @@ import {
   View,
   Modal,
   ScrollView,
+  ToastAndroid,
 } from "react-native";
 import { useUser } from "@clerk/clerk-expo";
 
 import { trpc } from "../utils/trpc";
-import { useForm, Controller, get } from "react-hook-form";
+import { useForm, Controller, get, set } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FlashList } from "@shopify/flash-list";
 import Delete from "../assets/icons/Delete";
@@ -27,14 +28,37 @@ export const CreateRecipe = () => {
   const [ingredientInputVisible, setIngredientInputVisible] = useState<
     "ingredient" | "unit" | "amount"
   >("amount");
+  const [indexToEdit, setIndexToEdit] = useState(0);
 
   const [instructionsModalVisible, setInstructionsModalVisible] =
     useState(false);
+
+  const {
+    control: searchControl,
+    watch: searchWatch,
+    reset: searchReset,
+  } = useForm({
+    defaultValues: {
+      unitSearch: "",
+      ingredientSearch: "",
+    },
+  });
 
   const { data: ingredientsAll, isSuccess: areIngredientsSuccess } =
     trpc.helper.allIngredients.useQuery();
   const { data: unitsAll, isSuccess: areUnitsSuccess } =
     trpc.helper.allUnits.useQuery();
+
+  const filteredUnits = (unitsAll || []).filter((unit) =>
+    unit.name.toLowerCase().includes(searchWatch("unitSearch").toLowerCase()),
+  );
+
+  const filteredIngredients = (ingredientsAll || []).filter((ingredient) =>
+    ingredient.name
+      .toLowerCase()
+      .includes(searchWatch("ingredientSearch").toLowerCase()),
+  );
+
   const { user } = useUser();
 
   const {
@@ -59,6 +83,7 @@ export const CreateRecipe = () => {
 
   const { mutate: addRecipe } = trpc.recipe.create.useMutation({
     async onSuccess() {
+      ToastAndroid.show("Recipe created", ToastAndroid.SHORT);
       reset();
       await utils.recipe.all.invalidate();
     },
@@ -107,7 +132,6 @@ export const CreateRecipe = () => {
     });
   });
 
-  let indexToEdit = 0;
   const numberOfIngredients = watch("ingredients").length;
   const nonEmptyInstructions = watch("instructions").filter(
     ({ instruction }) => instruction !== "",
@@ -207,7 +231,7 @@ export const CreateRecipe = () => {
                       setMode("edit");
                       setIngredientInputVisible("amount");
                       setIngredientsModalVisible(true);
-                      indexToEdit = index;
+                      setIndexToEdit(index);
                     }}
                   >
                     <Text className="text-md mx-1 my-2 min-w-[60px] rounded-lg border border-teal-200 p-2 text-center font-medium">
@@ -222,7 +246,7 @@ export const CreateRecipe = () => {
                       setMode("edit");
                       setIngredientInputVisible("unit");
                       setIngredientsModalVisible(true);
-                      indexToEdit = index;
+                      setIndexToEdit(index);
                     }}
                   >
                     <Text className="text-md mx-1 my-2 min-w-[60px] rounded-lg border border-teal-200 p-2 text-center font-medium">
@@ -238,7 +262,7 @@ export const CreateRecipe = () => {
                       setMode("edit");
                       setIngredientInputVisible("ingredient");
                       setIngredientsModalVisible(true);
-                      indexToEdit = index;
+                      setIndexToEdit(index);
                     }}
                   >
                     <Text className="text-md mx-1 my-2 min-w-[60px] rounded-lg border border-teal-200 p-2 text-center font-medium">
@@ -341,10 +365,20 @@ export const CreateRecipe = () => {
                 />
               </View>
             </View>
-            <View className="flex items-end">
+
+            <View className="flex flex-row gap-x-2">
+              <TouchableOpacity
+                className="flex-1 items-center rounded-xl border border-gray-300 py-2"
+                onPress={() => {
+                  setInstructionsModalVisible(false);
+                }}
+              >
+                <Text className="text-md font-medium">Save</Text>
+              </TouchableOpacity>
+
               <TouchableOpacity
                 disabled={isLastInstructionEmpty}
-                className={`w-max rounded bg-black p-2 ${
+                className={`flex-1 items-center rounded-xl border border-gray-300 py-2 ${
                   isLastInstructionEmpty ? "opacity-30" : "opacity-100"
                 }`}
                 onPress={() => {
@@ -353,7 +387,7 @@ export const CreateRecipe = () => {
                   });
                 }}
               >
-                <Text className="font-semibold text-white">Add step</Text>
+                <Text className="text-md font-medium">Add another</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -410,29 +444,26 @@ export const CreateRecipe = () => {
                   </View>
                   <View className="w-full space-y-8">
                     <Controller
-                      control={ingredientControl}
+                      control={searchControl}
                       render={({ field: { onChange, value } }) => (
                         <CustomTextInput
-                          keyboardType="phone-pad"
                           onSubmitEditing={() => {
                             setIngredientInputVisible("unit");
                           }}
-                          onChangeText={(value) => {
-                            onChange(value.replace(/[^0-9]/g, ""));
-                          }}
-                          value={value?.toString().replace(/[^0-9]/g, "")}
+                          onChangeText={onChange}
+                          value={value}
                           placeholder="Search for unit"
                           label="Select unit"
                         />
                       )}
-                      name="amount"
+                      name="unitSearch"
                       rules={{ required: true }}
                     />
                   </View>
 
-                  <View className="mt-4 flex h-[400px] w-full">
+                  <View className="mt-4 flex h-[250px] w-full">
                     <FlashList
-                      data={[...unitsAll]}
+                      data={[...filteredUnits]}
                       numColumns={2}
                       estimatedItemSize={8}
                       renderItem={({ item }) => {
@@ -479,29 +510,25 @@ export const CreateRecipe = () => {
                   </View>
                   <View className="w-full space-y-8">
                     <Controller
-                      control={ingredientControl}
+                      control={searchControl}
                       render={({ field: { onChange, value } }) => (
                         <CustomTextInput
-                          keyboardType="phone-pad"
                           onSubmitEditing={() => {
                             setIngredientInputVisible("unit");
                           }}
-                          onChangeText={(value) => {
-                            onChange(value.replace(/[^0-9]/g, ""));
-                          }}
-                          value={value?.toString().replace(/[^0-9]/g, "")}
+                          onChangeText={onChange}
+                          value={value}
                           placeholder="Search for ingredient"
                           label="Select ingredient"
                         />
                       )}
-                      name="amount"
-                      rules={{ required: true }}
+                      name="ingredientSearch"
                     />
                   </View>
 
-                  <View className="mt-4 flex h-[400px] w-full">
+                  <View className="mt-4 flex h-[250px] w-full">
                     <FlashList
-                      data={[...ingredientsAll]}
+                      data={[...filteredIngredients]}
                       numColumns={2}
                       estimatedItemSize={32}
                       renderItem={({ item }) => (
@@ -587,6 +614,7 @@ export const CreateRecipe = () => {
                         });
                         setIngredientsModalVisible(false);
                         ingredientReset();
+                        searchReset();
                         setIngredientInputVisible("amount");
                       }}
                       className={`flex-1 items-center rounded-xl border border-gray-300 py-2 ${
@@ -605,6 +633,7 @@ export const CreateRecipe = () => {
                         });
                         ingredientReset();
                         setIngredientInputVisible("amount");
+                        searchReset();
                       }}
                       className={`flex-1 items-center rounded-xl border border-gray-300 py-2 ${
                         disabled ? "opacity-30" : "opacity-100"
@@ -627,6 +656,7 @@ export const CreateRecipe = () => {
                         setIngredientsModalVisible(false);
                         setMode("create");
                         ingredientReset();
+                        searchReset();
                         setIngredientInputVisible("amount");
                       }}
                       className={`flex-1 items-center rounded-xl border border-gray-300 py-2 ${
@@ -641,6 +671,7 @@ export const CreateRecipe = () => {
                         setIngredientsModalVisible(false);
                         setMode("create");
                         ingredientReset();
+                        searchReset();
                         setIngredientInputVisible("amount");
                       }}
                       className={`flex-1 items-center rounded-xl border border-gray-300 py-2 ${
