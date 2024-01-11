@@ -18,16 +18,52 @@ import { FlashList } from "@shopify/flash-list";
 import Delete from "../assets/icons/Delete";
 import { RecipeForm, recipeSchema } from "../api/recipe";
 import { CustomTextInput } from "./CustomTextInput";
+import { useSwipe } from "../hooks/useSwipe";
+
+const nextInputVisible = (
+  currentInputVisible: "ingredient" | "unit" | "amount",
+) => {
+  switch (currentInputVisible) {
+    case "amount":
+      return "unit";
+    case "unit":
+      return "ingredient";
+    case "ingredient":
+      return "amount";
+  }
+};
+
+const previousInputVisible = (
+  currentInputVisible: "ingredient" | "unit" | "amount",
+) => {
+  switch (currentInputVisible) {
+    case "amount":
+      return "ingredient";
+    case "unit":
+      return "amount";
+    case "ingredient":
+      return "unit";
+  }
+};
 
 export const CreateRecipe = () => {
   const instructionsInputRefs = useRef<TextInput[]>([]);
-
   const utils = trpc.useContext();
   const [ingredientsModalVisible, setIngredientsModalVisible] = useState(false);
   const [mode, setMode] = useState<"create" | "edit">("create");
   const [ingredientInputVisible, setIngredientInputVisible] = useState<
     "ingredient" | "unit" | "amount"
   >("amount");
+
+  const { onTouchEnd, onTouchStart } = useSwipe(
+    () => {
+      setIngredientInputVisible(nextInputVisible(ingredientInputVisible));
+    },
+    () => {
+      setIngredientInputVisible(previousInputVisible(ingredientInputVisible));
+    },
+    6,
+  );
   const [indexToEdit, setIndexToEdit] = useState(0);
 
   const [instructionsModalVisible, setInstructionsModalVisible] =
@@ -401,7 +437,11 @@ export const CreateRecipe = () => {
           setIngredientsModalVisible((prev) => !prev);
         }}
       >
-        <View className="flex h-full bg-gray-100 p-4">
+        <View
+          className="flex h-full bg-gray-100 p-4"
+          onTouchEnd={onTouchEnd}
+          onTouchStart={onTouchStart}
+        >
           <View className="bg-card flex h-full w-full max-w-md justify-between rounded-lg border border-gray-300 bg-white p-6 shadow-sm">
             <View className="flex-shrink">
               {ingredientInputVisible === "amount" && (
@@ -465,7 +505,7 @@ export const CreateRecipe = () => {
                     <FlashList
                       data={[...filteredUnits]}
                       numColumns={2}
-                      estimatedItemSize={8}
+                      estimatedItemSize={32}
                       renderItem={({ item }) => {
                         return (
                           <View key={item.id} className="my-1">
@@ -573,7 +613,13 @@ export const CreateRecipe = () => {
                       setIngredientInputVisible("amount");
                     }}
                   >
-                    <Text className="text-md min-w-[60px] rounded-lg border border-teal-200 p-2 text-center font-medium">
+                    <Text
+                      className={`text-md min-w-[60px] rounded-lg border p-2 text-center font-medium ${
+                        ingredientInputVisible === "amount"
+                          ? "border-teal-600"
+                          : "border-teal-200"
+                      }`}
+                    >
                       {ingredientWatch("amount") || "..."}
                     </Text>
                   </TouchableOpacity>
@@ -582,7 +628,13 @@ export const CreateRecipe = () => {
                       setIngredientInputVisible("unit");
                     }}
                   >
-                    <Text className="text-md min-w-[60px] rounded-lg border border-teal-200 p-2 text-center font-medium">
+                    <Text
+                      className={`text-md min-w-[60px] rounded-lg border p-2 text-center font-medium ${
+                        ingredientInputVisible === "unit"
+                          ? "border-teal-600"
+                          : "border-teal-200"
+                      }`}
+                    >
                       {unitsAll.find(
                         ({ id }) => id === ingredientWatch("unitId"),
                       )?.name || "..."}
@@ -594,7 +646,13 @@ export const CreateRecipe = () => {
                       setIngredientInputVisible("ingredient");
                     }}
                   >
-                    <Text className="text-md min-w-[60px] rounded-lg border border-teal-200 p-2 text-center font-medium">
+                    <Text
+                      className={`text-md min-w-[60px] rounded-lg border p-2 text-center font-medium ${
+                        ingredientInputVisible === "ingredient"
+                          ? "border-teal-600"
+                          : "border-teal-200"
+                      }`}
+                    >
                       {ingredientsAll.find(
                         ({ id }) => id === ingredientWatch("ingredientId"),
                       )?.name || "..."}
