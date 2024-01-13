@@ -48,6 +48,7 @@ const previousInputVisible = (
 
 export const CreateRecipe = () => {
   const instructionsInputRefs = useRef<TextInput[]>([]);
+  const amountInputRef = useRef<TextInput>(null);
   const utils = trpc.useContext();
   const [ingredientsModalVisible, setIngredientsModalVisible] = useState(false);
   const [mode, setMode] = useState<"create" | "edit">("create");
@@ -349,6 +350,13 @@ export const CreateRecipe = () => {
       <Modal
         animationType="slide"
         visible={instructionsModalVisible}
+        onShow={() => {
+          setTimeout(() => {
+            instructionsInputRefs.current[
+              instructionsInputRefs.current.length - 1
+            ]?.focus();
+          }, 100);
+        }}
         onRequestClose={() => {
           setInstructionsModalVisible((prev) => !prev);
         }}
@@ -439,6 +447,11 @@ export const CreateRecipe = () => {
       <Modal
         animationType="slide"
         visible={ingredientsModalVisible}
+        onShow={() => {
+          setTimeout(() => {
+            amountInputRef.current?.focus();
+          }, 100);
+        }}
         onRequestClose={() => {
           setIngredientsModalVisible((prev) => !prev);
         }}
@@ -462,6 +475,7 @@ export const CreateRecipe = () => {
                       control={ingredientControl}
                       render={({ field: { onChange, value } }) => (
                         <CustomTextInput
+                          ref={amountInputRef}
                           keyboardType="phone-pad"
                           onSubmitEditing={() => {
                             setIngredientInputVisible("unit");
@@ -510,6 +524,7 @@ export const CreateRecipe = () => {
                   <View className="mt-4 flex h-[250px] w-full">
                     <FlashList
                       data={[...filteredUnits]}
+                      keyboardShouldPersistTaps="always"
                       numColumns={2}
                       estimatedItemSize={32}
                       renderItem={({ item }) => {
@@ -575,6 +590,7 @@ export const CreateRecipe = () => {
                   <View className="mt-4 flex h-[250px] w-full">
                     <FlashList
                       data={[...filteredIngredients]}
+                      keyboardShouldPersistTaps="always"
                       numColumns={2}
                       estimatedItemSize={32}
                       renderItem={({ item }) => (

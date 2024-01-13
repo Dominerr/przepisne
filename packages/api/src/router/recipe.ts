@@ -22,7 +22,6 @@ export const recipeRouter = router({
         instructions: true,
       },
     });
-    console.log("recipes", recipes);
 
     const users = (
       await clerkClient.users.getUserList({
@@ -38,6 +37,57 @@ export const recipeRouter = router({
       };
     });
   }),
+  search: publicProcedure
+    .input(
+      z.object({
+        search: z.string(),
+        ingredients: z.array(z.string()),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const ingredients = await ctx.prisma.ingredient.findMany();
+
+      const ingredientConditions = input.ingredients.map((ingredientId) => ({
+        ingredients: {
+          some: {
+            ingredientId: {
+              equals: ingredientId,
+            },
+          },
+        },
+      }));
+
+      const recipes = await ctx.prisma.recipe.findMany({
+        include: {
+          ingredients: true,
+          instructions: true,
+        },
+        where: {
+          AND: [
+            {
+              name: {
+                contains: input.search,
+              },
+            },
+            ...ingredientConditions,
+          ],
+        },
+      });
+
+      const users = (
+        await clerkClient.users.getUserList({
+          userId: recipes.map((recipe) => recipe.authorId),
+        })
+      ).map(filterUserForClient);
+
+      return recipes.map((recipe) => {
+        const author = users.find((user) => user.id === recipe.authorId);
+        return {
+          ...recipe,
+          author,
+        };
+      });
+    }),
   byId: publicProcedure.input(z.string()).query(({ ctx, input }) => {
     return ctx.prisma.recipe.findFirst({ where: { id: input } });
   }),
