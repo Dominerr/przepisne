@@ -11,15 +11,30 @@ import {
 } from "react-native";
 import type { inferProcedureOutput } from "@trpc/server";
 import type { AppRouter } from "@acme/api";
-import Clock from "../assets/icons/Clock";
 import Fire from "../assets/icons/Fire";
+import Star from "../assets/icons/Star";
+import { trpc } from "../utils/trpc";
+import { useUser } from "@clerk/clerk-expo";
 
 export const RecipeCard: React.FC<{
   recipe: inferProcedureOutput<AppRouter["recipe"]["all"]>[number];
   ingredients: inferProcedureOutput<AppRouter["helper"]["allIngredients"]>;
   units: inferProcedureOutput<AppRouter["helper"]["allUnits"]>;
 }> = ({ recipe, ingredients, units }) => {
+  const utils = trpc.useContext();
+  const { user } = useUser();
   const [modalVisible, setModalVisible] = useState(false);
+  const { mutate: changeFavouriteStatus } =
+    trpc.recipe.changeFavouriteStatus.useMutation({
+      onSuccess: async () => {
+        await utils.recipe.invalidate();
+      },
+    });
+
+  const isSaved = recipe?.savedByUsers?.some(
+    (savedByUser) => savedByUser.userId === user?.id,
+  );
+
   return (
     <>
       <View className="rounded-lg border border-gray-300 bg-white p-4">
@@ -29,8 +44,16 @@ export const RecipeCard: React.FC<{
           </Text>
 
           <View className="ml-auto flex flex-row items-center">
-            <Clock className="mr-2 text-slate-600" />
-            <Text className="text-slate-600">30 minutes</Text>
+            <TouchableOpacity
+              onPress={() => {
+                changeFavouriteStatus({
+                  recipeId: recipe.id,
+                  userId: user?.id!,
+                });
+              }}
+            >
+              <Star className={isSaved ? "text-amber-600" : "text-slate-300"} />
+            </TouchableOpacity>
           </View>
         </View>
         <View className="mb-6">
@@ -113,8 +136,18 @@ export const RecipeCard: React.FC<{
               </Text>
 
               <View className="ml-auto flex flex-row items-center">
-                <Clock className="mr-2 text-slate-600" />
-                <Text className="text-slate-600">30 minutes</Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    changeFavouriteStatus({
+                      recipeId: recipe.id,
+                      userId: user?.id!,
+                    });
+                  }}
+                >
+                  <Star
+                    className={isSaved ? "text-amber-600" : "text-slate-300"}
+                  />
+                </TouchableOpacity>
               </View>
             </View>
             <View className="mb-6">

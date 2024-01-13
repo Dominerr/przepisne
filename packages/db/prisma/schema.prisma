@@ -12,17 +12,30 @@ datasource db {
 }
 
 model User {
-    id       String @id @default(cuid()) 
-    Recipes  Recipe[]
+  id           String       @id @default(cuid())
+  Recipes      Recipe[]
+  savedRecipes SavedRecipe[]
 }
 
 model Recipe {
-    id           String @id @default(cuid())
-    name         String
-    instructions RecipeInstruction[]
-    authorId     String
-    ingredients  RecipeIngredient[]
-    users        User[]
+  id           String       @id @default(cuid())
+  name         String
+  instructions RecipeInstruction[]
+  authorId     String
+  ingredients  RecipeIngredient[]
+  users        User[]
+  savedByUsers SavedRecipe[]
+}
+
+model SavedRecipe {
+  userId  String
+  user    User   @relation(fields: [userId], references: [id])
+  recipeId String
+  recipe  Recipe @relation(fields: [recipeId], references: [id])
+
+ @@index([userId])
+ @@index([recipeId])
+  @@id([userId, recipeId])
 }
 
 model Unit {

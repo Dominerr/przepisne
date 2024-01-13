@@ -20,6 +20,7 @@ export const recipeRouter = router({
       include: {
         ingredients: true,
         instructions: true,
+        savedByUsers: true,
       },
     });
 
@@ -37,6 +38,75 @@ export const recipeRouter = router({
       };
     });
   }),
+  favourite: protectedProcedure
+    .input(z.object({ userId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const recipes = await ctx.prisma.savedRecipe.findMany({
+        where: {
+          userId: input.userId,
+        },
+        include: {
+          recipe: {
+            include: {
+              ingredients: true,
+              instructions: true,
+              savedByUsers: true,
+            },
+          },
+        },
+      });
+
+      const users = (
+        await clerkClient.users.getUserList({
+          userId: recipes.map((savedRecipe) => savedRecipe.recipe.authorId),
+        })
+      ).map(filterUserForClient);
+
+      return recipes.map((savedRecipe) => {
+        const author = users.find(
+          (user) => user.id === savedRecipe.recipe.authorId,
+        );
+        return {
+          ...savedRecipe.recipe,
+          author,
+        };
+      });
+    }),
+  changeFavouriteStatus: protectedProcedure
+    .input(
+      z.object({
+        recipeId: z.string(),
+        userId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { recipeId, userId } = input;
+      const savedRecipe = await ctx.prisma.savedRecipe.findFirst({
+        where: {
+          recipeId,
+          userId,
+        },
+      });
+
+      if (savedRecipe) {
+        await ctx.prisma.savedRecipe.delete({
+          where: {
+            userId_recipeId: {
+              userId,
+              recipeId,
+            },
+          },
+        });
+      } else {
+        await ctx.prisma.savedRecipe.create({
+          data: {
+            recipeId,
+            userId,
+          },
+        });
+      }
+    }),
+
   search: publicProcedure
     .input(
       z.object({
@@ -45,8 +115,6 @@ export const recipeRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const ingredients = await ctx.prisma.ingredient.findMany();
-
       const ingredientConditions = input.ingredients.map((ingredientId) => ({
         ingredients: {
           some: {
@@ -61,6 +129,7 @@ export const recipeRouter = router({
         include: {
           ingredients: true,
           instructions: true,
+          savedByUsers: true,
         },
         where: {
           AND: [

@@ -88,7 +88,7 @@ export const DiscoverScreen = ({}: DiscoverScreenProps) => {
           </Text>
         )}
         <FlashList
-          data={allRecipes}
+          data={[...(allRecipes ?? [])]}
           estimatedItemSize={20}
           ItemSeparatorComponent={() => <View className="h-4" />}
           renderItem={({ item }) => (
