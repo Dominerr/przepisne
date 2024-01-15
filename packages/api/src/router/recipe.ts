@@ -21,25 +21,20 @@ export const recipeRouter = router({
         ingredients: true,
         instructions: true,
         savedByUsers: true,
+        author: true,
       },
     });
 
-    const users = (
-      await clerkClient.users.getUserList({
-        userId: recipes.map((recipe) => recipe.authorId),
-      })
-    ).map(filterUserForClient);
-
-    return recipes.map((recipe) => {
-      const author = users.find((user) => user.id === recipe.authorId);
-      return {
-        ...recipe,
-        author,
-      };
-    });
+    return recipes;
   }),
   favourite: protectedProcedure
-    .input(z.object({ userId: z.string() }))
+    .input(
+      z.object({
+        userId: z.string(),
+        limit: z.number().min(1).max(100),
+        cursor: z.string().nullish(),
+      }),
+    )
     .query(async ({ ctx, input }) => {
       const recipes = await ctx.prisma.savedRecipe.findMany({
         where: {
@@ -51,26 +46,32 @@ export const recipeRouter = router({
               ingredients: true,
               instructions: true,
               savedByUsers: true,
+              author: true,
             },
           },
         },
+        skip: input?.cursor ? 1 : undefined,
+        take: input?.limit,
+        cursor: input?.cursor
+          ? {
+              userId_recipeId: {
+                userId: input.userId,
+                recipeId: input.cursor,
+              },
+            }
+          : undefined,
+        orderBy: {
+          createdAt: "desc",
+        },
       });
 
-      const users = (
-        await clerkClient.users.getUserList({
-          userId: recipes.map((savedRecipe) => savedRecipe.recipe.authorId),
-        })
-      ).map(filterUserForClient);
+      const lastRecipe = recipes[recipes.length - 1];
+      const nextCursor = lastRecipe?.recipeId;
 
-      return recipes.map((savedRecipe) => {
-        const author = users.find(
-          (user) => user.id === savedRecipe.recipe.authorId,
-        );
-        return {
-          ...savedRecipe.recipe,
-          author,
-        };
-      });
+      return {
+        recipes,
+        nextCursor,
+      };
     }),
   changeFavouriteStatus: protectedProcedure
     .input(
@@ -106,12 +107,13 @@ export const recipeRouter = router({
         });
       }
     }),
-
   search: publicProcedure
     .input(
       z.object({
         search: z.string(),
         ingredients: z.array(z.string()),
+        limit: z.number().min(1).max(100),
+        cursor: z.string().nullish(),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -130,7 +132,11 @@ export const recipeRouter = router({
           ingredients: true,
           instructions: true,
           savedByUsers: true,
+          author: true,
         },
+        skip: input?.cursor ? 1 : undefined,
+        take: input?.limit,
+        cursor: input?.cursor ? { id: input.cursor } : undefined,
         where: {
           AND: [
             {
@@ -146,19 +152,13 @@ export const recipeRouter = router({
         },
       });
 
-      const users = (
-        await clerkClient.users.getUserList({
-          userId: recipes.map((recipe) => recipe.authorId),
-        })
-      ).map(filterUserForClient);
+      const lastRecipe = recipes[recipes.length - 1];
+      const nextCursor = lastRecipe?.id;
 
-      return recipes.map((recipe) => {
-        const author = users.find((user) => user.id === recipe.authorId);
-        return {
-          ...recipe,
-          author,
-        };
-      });
+      return {
+        recipes,
+        nextCursor,
+      };
     }),
   byId: publicProcedure.input(z.string()).query(({ ctx, input }) => {
     return ctx.prisma.recipe.findFirst({ where: { id: input } });

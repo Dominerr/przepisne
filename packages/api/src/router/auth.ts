@@ -12,6 +12,8 @@ export const authRouter = router({
     .input(
       z.object({
         id: z.string(),
+        firstName: z.string(),
+        lastName: z.string(),
       }),
     )
     .mutation(({ ctx, input }) => {

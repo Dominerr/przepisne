@@ -1,6 +1,6 @@
 import React from "react";
 
-import { Text, TouchableOpacity, View } from "react-native";
+import { RefreshControl, Text, TouchableOpacity, View } from "react-native";
 
 import { FlashList } from "@shopify/flash-list";
 
@@ -15,20 +15,33 @@ import { useUser } from "@clerk/clerk-expo";
 type HomeScreenProps = StackScreenProps<RootParamList, "Home">;
 
 export const HomeScreen = ({ navigation }: HomeScreenProps) => {
+  const [refreshing, setRefreshing] = React.useState(false);
   const { user } = useUser();
-  const { data: favouriteRecipes, isSuccess: areFavouriteRecipesSuccess } =
-    trpc.recipe.favourite.useQuery(
-      {
-        userId: user?.id!,
+  const utils = trpc.useContext();
+  const {
+    data: favouriteRecipes,
+    isSuccess: areFavouriteRecipesSuccess,
+    fetchNextPage,
+  } = trpc.recipe.favourite.useInfiniteQuery(
+    {
+      userId: user?.id!,
+      limit: 10,
+    },
+    {
+      enabled: !!user,
+      getNextPageParam: (lastPage) => {
+        return lastPage.nextCursor;
       },
-      {
-        enabled: !!user,
-      },
-    );
+    },
+  );
   const { data: ingredients, isSuccess: areIngredientsSuccess } =
     trpc.helper.allIngredients.useQuery();
   const { data: units, isSuccess: areUnitsSuccess } =
     trpc.helper.allUnits.useQuery();
+
+  const favouriteRecipesPages = favouriteRecipes?.pages.flatMap(
+    (page) => page.recipes,
+  );
 
   if (
     !areIngredientsSuccess ||
@@ -55,7 +68,7 @@ export const HomeScreen = ({ navigation }: HomeScreenProps) => {
         </TouchableOpacity>
       </View>
 
-      {favouriteRecipes.length === 0 && (
+      {favouriteRecipesPages?.length === 0 && (
         <View className="flex h-full flex-col items-center justify-center">
           <Text className="text-2xl font-semibold text-black">
             You have no favourite recipes!
@@ -65,14 +78,35 @@ export const HomeScreen = ({ navigation }: HomeScreenProps) => {
           </Text>
         </View>
       )}
-      {favouriteRecipes.length > 0 && (
+      {favouriteRecipesPages?.length && favouriteRecipesPages.length > 0 && (
         <FlashList
-          data={favouriteRecipes}
+          data={[...favouriteRecipesPages]}
           estimatedItemSize={20}
           ItemSeparatorComponent={() => <View className="h-4" />}
           renderItem={({ item }) => (
-            <RecipeCard recipe={item} ingredients={ingredients} units={units} />
+            <RecipeCard
+              recipe={item.recipe}
+              ingredients={ingredients}
+              units={units}
+            />
           )}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => {
+                setRefreshing(true);
+                utils.recipe.favourite.invalidate().then(() => {
+                  setRefreshing(false);
+                });
+              }}
+            />
+          }
+          onEndReached={() => {
+            setRefreshing(true);
+            fetchNextPage().then(() => {
+              setRefreshing(false);
+            });
+          }}
         />
       )}
     </View>

@@ -1,6 +1,6 @@
 import {
   Modal,
-  ScrollView,
+  RefreshControl,
   Text,
   TextInput,
   TouchableOpacity,
@@ -20,6 +20,9 @@ import Check from "../assets/icons/Check";
 type DiscoverScreenProps = StackScreenProps<RootParamList, "Discover">;
 
 export const DiscoverScreen = ({}: DiscoverScreenProps) => {
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const utils = trpc.useContext();
   const [searchModalVisible, setSearchModalVisible] = React.useState(false);
   const searchInputRef = React.useRef<TextInput>(null);
   const { control, watch, setValue } = useForm<{
@@ -32,11 +35,25 @@ export const DiscoverScreen = ({}: DiscoverScreenProps) => {
     },
   });
 
-  const { data: allRecipes, isLoading: areRecipesLoading } =
-    trpc.recipe.search.useQuery({
+  const {
+    data: allRecipes,
+    isLoading: areRecipesLoading,
+    fetchNextPage,
+  } = trpc.recipe.search.useInfiniteQuery(
+    {
       search: watch("search"),
       ingredients: watch("ingredients"),
-    });
+      limit: 10,
+    },
+    {
+      getNextPageParam: (lastPage) => {
+        return lastPage.nextCursor;
+      },
+      keepPreviousData: true,
+    },
+  );
+
+  const allRecipesPages = allRecipes?.pages.flatMap((page) => page.recipes);
 
   const { data: allIngredients, isSuccess: areIngredientsSuccess } =
     trpc.helper.allIngredients.useQuery();
@@ -82,13 +99,13 @@ export const DiscoverScreen = ({}: DiscoverScreenProps) => {
         {areRecipesLoading && (
           <Text className="text-md text-center font-medium">Loading...</Text>
         )}
-        {allRecipes?.length === 0 && (
+        {allRecipesPages?.length === 0 && (
           <Text className="text-md text-center font-medium">
             No recipes found.
           </Text>
         )}
         <FlashList
-          data={[...(allRecipes ?? [])]}
+          data={[...(allRecipesPages ?? [])]}
           estimatedItemSize={20}
           ItemSeparatorComponent={() => <View className="h-4" />}
           renderItem={({ item }) => (
@@ -98,6 +115,24 @@ export const DiscoverScreen = ({}: DiscoverScreenProps) => {
               units={units}
             />
           )}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => {
+                setRefreshing(true);
+                utils.recipe.search.invalidate().then(() => {
+                  setRefreshing(false);
+                });
+              }}
+            />
+          }
+          onEndReached={() => {
+            setRefreshing(true);
+            fetchNextPage().then(() => {
+              setRefreshing(false);
+            });
+          }}
+          onEndReachedThreshold={0.8}
         />
       </View>
 

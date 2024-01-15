@@ -13,7 +13,9 @@ datasource db {
 
 model User {
   id           String       @id @default(cuid())
-  Recipes      Recipe[]
+  Recipes      Recipe[] @relation(name: "RecipeAuthor")
+  firstName    String 
+  lastName     String 
   savedRecipes SavedRecipe[]
 }
 
@@ -22,12 +24,14 @@ model Recipe {
   name         String
   instructions RecipeInstruction[]
   authorId     String
+  author       User         @relation(name: "RecipeAuthor", fields: [authorId], references: [id])
   difficulty   String
   timeRequired String
   ingredients  RecipeIngredient[]
-  users        User[]
   savedByUsers SavedRecipe[]
   createdAt    DateTime     @default(now())
+
+  @@index([authorId])
 }
 
 model SavedRecipe {
@@ -35,6 +39,7 @@ model SavedRecipe {
   user    User   @relation(fields: [userId], references: [id])
   recipeId String
   recipe  Recipe @relation(fields: [recipeId], references: [id])
+  createdAt DateTime @default(now())
 
  @@index([userId])
  @@index([recipeId])
