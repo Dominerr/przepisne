@@ -16,7 +16,6 @@ export default async function handler(
   const headers = req.headers;
   // Create a new Webhook instance with your webhook secret
   const wh = new Webhook(webhookSecret);
-  console.log(webhookSecret);
 
   let evt: any;
   try {
@@ -27,6 +26,7 @@ export default async function handler(
     return res.status(400).json({});
   }
   const { id, firstName, lastName } = evt.data;
+  console.log(evt.data, "evt.data");
 
   const trpc = await createContext({ req, res });
 
