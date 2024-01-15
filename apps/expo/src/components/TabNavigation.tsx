@@ -25,7 +25,6 @@ export function TabNavigator() {
         component={HomeScreen}
         options={{
           tabBarShowLabel: false,
-          unmountOnBlur: true,
           header: () => <Header />,
           tabBarActiveTintColor: "rgb(20 184 166)",
           tabBarIcon: ({ color, size }) => (
@@ -38,7 +37,6 @@ export function TabNavigator() {
         component={DiscoverScreen}
         options={{
           tabBarShowLabel: false,
-          unmountOnBlur: true,
           header: () => <Header />,
           tabBarActiveTintColor: "rgb(20 184 166)",
           tabBarIcon: ({ color, size }) => (
@@ -51,7 +49,6 @@ export function TabNavigator() {
         component={CreateRecipeScreen}
         options={{
           tabBarShowLabel: false,
-          unmountOnBlur: true,
           header: () => <Header />,
           tabBarActiveTintColor: "rgb(20 184 166)",
           tabBarIcon: ({ color, size }) => (
