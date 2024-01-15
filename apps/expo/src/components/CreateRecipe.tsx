@@ -19,6 +19,7 @@ import Delete from "../assets/icons/Delete";
 import { RecipeForm, recipeSchema } from "../api/recipe";
 import { CustomTextInput } from "./CustomTextInput";
 import { useSwipe } from "../hooks/useSwipe";
+import Fire from "../assets/icons/Fire";
 
 const nextInputVisible = (
   currentInputVisible: "ingredient" | "unit" | "amount",
@@ -51,6 +52,9 @@ export const CreateRecipe = () => {
   const amountInputRef = useRef<TextInput>(null);
   const utils = trpc.useContext();
   const [ingredientsModalVisible, setIngredientsModalVisible] = useState(false);
+  const [difficultyPanelVisible, setDifficultyPanelVisible] = useState(false);
+  const [timeRequiredPanelVisible, setTimeRequiredPanelVisible] =
+    useState(false);
   const [mode, setMode] = useState<"create" | "edit">("create");
   const [ingredientInputVisible, setIngredientInputVisible] = useState<
     "ingredient" | "unit" | "amount"
@@ -112,6 +116,8 @@ export const CreateRecipe = () => {
       name: "",
       instructions: [],
       ingredients: [],
+      difficulty: "Easy",
+      timeRequired: "15",
       authorId: user?.id,
     },
   });
@@ -337,6 +343,152 @@ export const CreateRecipe = () => {
             )}
           </View>
 
+          <View className="flex-row justify-between py-4">
+            <View>
+              <Text className="mb-2 text-sm font-medium leading-none">
+                Select difficulty
+              </Text>
+              {difficultyPanelVisible ? (
+                <View className="items-center justify-center gap-y-2">
+                  <TouchableOpacity
+                    onPress={() => {
+                      setValue("difficulty", "Easy");
+                      setDifficultyPanelVisible((prev) => !prev);
+                    }}
+                    className="w-[120px] flex-row items-center justify-center rounded-lg border border-gray-300 bg-white p-2"
+                  >
+                    <Fire className="text-green-800" />
+                    <Text className="text-base text-slate-500">Easy</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setValue("difficulty", "Medium");
+                      setDifficultyPanelVisible((prev) => !prev);
+                    }}
+                    className="w-[120px] flex-row items-center justify-center rounded-lg border border-gray-300 bg-white p-2"
+                  >
+                    <Fire className="text-orange-500" />
+                    <Text className="text-base text-slate-500">Medium</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setValue("difficulty", "Hard");
+                      setDifficultyPanelVisible((prev) => !prev);
+                    }}
+                    className="w-[120px] flex-row items-center justify-center rounded-lg border border-gray-300 bg-white p-2"
+                  >
+                    <Fire className="text-red-500" />
+                    <Text className="text-base text-slate-500">Hard</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  onPress={() => {
+                    setDifficultyPanelVisible((prev) => !prev);
+                  }}
+                  className="relative w-[120px] flex-row items-center justify-center rounded-lg border border-gray-300 p-2"
+                >
+                  <Fire
+                    className={
+                      watch("difficulty") === "Easy"
+                        ? "text-green-800"
+                        : watch("difficulty") === "Medium"
+                        ? "text-orange-500"
+                        : "text-red-500"
+                    }
+                  />
+                  <Text className="text-base text-slate-500">
+                    {watch("difficulty")}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+            <View>
+              <Text className="mb-2 text-sm font-medium leading-none">
+                Select time
+              </Text>
+              {timeRequiredPanelVisible ? (
+                <View className="flex-row items-center gap-x-1">
+                  <View className="items-center justify-center gap-y-1">
+                    <TouchableOpacity
+                      onPress={() => {
+                        setValue("timeRequired", "15");
+                        setTimeRequiredPanelVisible((prev) => !prev);
+                      }}
+                      className="w-[58px] items-center justify-center rounded-lg border border-gray-300 bg-white p-2"
+                    >
+                      <Text className="leading-4 text-slate-500">15</Text>
+                      <Text className="leading-4 text-slate-500">min</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setValue("timeRequired", "45");
+                        setTimeRequiredPanelVisible((prev) => !prev);
+                      }}
+                      className="w-[58px] items-center justify-center rounded-lg border border-gray-300 bg-white p-2"
+                    >
+                      <Text className="leading-4 text-slate-500">45</Text>
+                      <Text className="leading-4 text-slate-500">min</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setValue("timeRequired", "75");
+                        setTimeRequiredPanelVisible((prev) => !prev);
+                      }}
+                      className="w-[58px] items-center justify-center rounded-lg border border-gray-300 bg-white p-2"
+                    >
+                      <Text className="leading-4 text-slate-500">75</Text>
+                      <Text className="leading-4 text-slate-500">min</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View className="items-center justify-center gap-y-1">
+                    <TouchableOpacity
+                      onPress={() => {
+                        setValue("timeRequired", "30");
+                        setTimeRequiredPanelVisible((prev) => !prev);
+                      }}
+                      className="w-[58px] items-center justify-center rounded-lg border border-gray-300 bg-white p-2"
+                    >
+                      <Text className="leading-4 text-slate-500">30</Text>
+                      <Text className="leading-4 text-slate-500">min</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setValue("timeRequired", "60");
+                        setTimeRequiredPanelVisible((prev) => !prev);
+                      }}
+                      className="w-[58px] items-center justify-center rounded-lg border border-gray-300 bg-white p-2"
+                    >
+                      <Text className="leading-4 text-slate-500">60</Text>
+                      <Text className="leading-4 text-slate-500">min</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setValue("timeRequired", "90");
+                        setTimeRequiredPanelVisible((prev) => !prev);
+                      }}
+                      className="w-[58px] items-center justify-center rounded-lg border border-gray-300 bg-white p-2"
+                    >
+                      <Text className="leading-4 text-slate-500">90</Text>
+                      <Text className="leading-4 text-slate-500">min</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  onPress={() => {
+                    setTimeRequiredPanelVisible((prev) => !prev);
+                  }}
+                  className="relative w-[120px] flex-row items-center justify-center rounded-lg border border-gray-300 p-2"
+                >
+                  <Text className="text-base text-slate-500">
+                    {watch("timeRequired")}
+                  </Text>
+                  <Text className="text-base text-slate-500">min</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
           <TouchableOpacity
             className="mb-0 mt-6 flex flex-row items-center justify-center rounded bg-teal-700 p-2"
             onPress={onSubmit}
@@ -347,6 +499,7 @@ export const CreateRecipe = () => {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
       <Modal
         animationType="slide"
         visible={instructionsModalVisible}
@@ -418,15 +571,6 @@ export const CreateRecipe = () => {
 
             <View className="flex flex-row gap-x-2">
               <TouchableOpacity
-                className="flex-1 items-center rounded-xl border border-gray-300 py-2"
-                onPress={() => {
-                  setInstructionsModalVisible(false);
-                }}
-              >
-                <Text className="text-md font-medium">Save</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
                 disabled={isLastInstructionEmpty}
                 className={`flex-1 items-center rounded-xl border border-gray-300 py-2 ${
                   isLastInstructionEmpty ? "opacity-30" : "opacity-100"
@@ -438,6 +582,15 @@ export const CreateRecipe = () => {
                 }}
               >
                 <Text className="text-md font-medium">Add another</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                className="flex-1 items-center rounded-xl border border-gray-300 py-2"
+                onPress={() => {
+                  setInstructionsModalVisible(false);
+                }}
+              >
+                <Text className="text-md font-medium">Save</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -692,6 +845,25 @@ export const CreateRecipe = () => {
                           ingredientId: ingredientWatch("ingredientId"),
                           unitId: ingredientWatch("unitId"),
                         });
+                        ingredientReset();
+                        setIngredientInputVisible("amount");
+                        searchReset();
+                      }}
+                      className={`flex-1 items-center rounded-xl border border-gray-300 py-2 ${
+                        disabled ? "opacity-30" : "opacity-100"
+                      }`}
+                    >
+                      <Text className="text-md font-medium">Add another</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      disabled={disabled}
+                      onPress={() => {
+                        setValue(`ingredients.${numberOfIngredients}`, {
+                          amount: Number(ingredientWatch("amount") || 0),
+                          ingredientId: ingredientWatch("ingredientId"),
+                          unitId: ingredientWatch("unitId"),
+                        });
                         setIngredientsModalVisible(false);
                         ingredientReset();
                         searchReset();
@@ -703,28 +875,26 @@ export const CreateRecipe = () => {
                     >
                       <Text className="text-md font-medium">Save</Text>
                     </TouchableOpacity>
+                  </View>
+                )}
+                {mode === "edit" && (
+                  <View className="flex flex-row gap-x-2">
                     <TouchableOpacity
                       disabled={disabled}
                       onPress={() => {
-                        setValue(`ingredients.${numberOfIngredients}`, {
-                          amount: Number(ingredientWatch("amount") || 0),
-                          ingredientId: ingredientWatch("ingredientId"),
-                          unitId: ingredientWatch("unitId"),
-                        });
+                        setIngredientsModalVisible(false);
+                        setMode("create");
                         ingredientReset();
-                        setIngredientInputVisible("amount");
                         searchReset();
+                        setIngredientInputVisible("amount");
                       }}
                       className={`flex-1 items-center rounded-xl border border-gray-300 py-2 ${
                         disabled ? "opacity-30" : "opacity-100"
                       }`}
                     >
-                      <Text className="text-md font-medium">Add another</Text>
+                      <Text className="text-md font-medium">Cancel</Text>
                     </TouchableOpacity>
-                  </View>
-                )}
-                {mode === "edit" && (
-                  <View className="flex flex-row gap-x-2">
+
                     <TouchableOpacity
                       disabled={disabled}
                       onPress={() => {
@@ -744,21 +914,6 @@ export const CreateRecipe = () => {
                       }`}
                     >
                       <Text className="text-md font-medium">Update</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      disabled={disabled}
-                      onPress={() => {
-                        setIngredientsModalVisible(false);
-                        setMode("create");
-                        ingredientReset();
-                        searchReset();
-                        setIngredientInputVisible("amount");
-                      }}
-                      className={`flex-1 items-center rounded-xl border border-gray-300 py-2 ${
-                        disabled ? "opacity-30" : "opacity-100"
-                      }`}
-                    >
-                      <Text className="text-md font-medium">Cancel</Text>
                     </TouchableOpacity>
                   </View>
                 )}

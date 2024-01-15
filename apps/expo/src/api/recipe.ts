@@ -17,6 +17,8 @@ export const recipeSchema = z.object({
       }),
     )
     .min(1),
+  difficulty: z.enum(["Easy", "Medium", "Hard"]),
+  timeRequired: z.string().min(1),
 });
 
 export type RecipeForm = z.infer<typeof recipeSchema>;

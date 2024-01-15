@@ -22,9 +22,12 @@ model Recipe {
   name         String
   instructions RecipeInstruction[]
   authorId     String
+  difficulty   String
+  timeRequired String
   ingredients  RecipeIngredient[]
   users        User[]
   savedByUsers SavedRecipe[]
+  createdAt    DateTime     @default(now())
 }
 
 model SavedRecipe {

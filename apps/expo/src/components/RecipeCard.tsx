@@ -15,6 +15,7 @@ import Fire from "../assets/icons/Fire";
 import Star from "../assets/icons/Star";
 import { trpc } from "../utils/trpc";
 import { useUser } from "@clerk/clerk-expo";
+import Clock from "../assets/icons/Clock";
 
 export const RecipeCard: React.FC<{
   recipe: inferProcedureOutput<AppRouter["recipe"]["all"]>[number];
@@ -56,7 +57,7 @@ export const RecipeCard: React.FC<{
             </TouchableOpacity>
           </View>
         </View>
-        <View className="mb-6">
+        <View className="mb-2">
           <Text className="italic text-slate-600">
             By{" "}
             <Text className="font-medium">
@@ -64,7 +65,30 @@ export const RecipeCard: React.FC<{
             </Text>
           </Text>
         </View>
-        <View className="gap-y-2">
+        <View className="gap-y-4">
+          <View className="flex flex-row items-center justify-between">
+            <View className="flex flex-row items-center gap-x-2">
+              <Fire
+                className={
+                  recipe.difficulty === "Easy"
+                    ? "text-green-800"
+                    : recipe.difficulty === "Medium"
+                    ? "text-orange-500"
+                    : "text-red-500"
+                }
+              />
+              <Text className="text-base text-slate-500">
+                {recipe.difficulty} Difficulty
+              </Text>
+            </View>
+
+            <View className="flex flex-row items-center gap-x-2">
+              <Clock className="text-slate-500" />
+              <Text className="text-base text-slate-500">
+                {recipe.timeRequired} min
+              </Text>
+            </View>
+          </View>
           <Text className="text-lg font-semibold">Ingredients</Text>
           <View className="my-2 rounded bg-gray-200 p-2">
             {recipe.ingredients.slice(0, 4).map((ingredient, index) => (
@@ -93,20 +117,15 @@ export const RecipeCard: React.FC<{
               </View>
             )}
           </View>
-          <View className="flex flex-row items-center justify-between">
-            <View className="flex flex-row items-center gap-x-2">
-              <Fire className="text-orange-500" />
-              <Text className="text-base text-slate-500">
-                Medium Difficulty
-              </Text>
-            </View>
+
+          <View>
             <TouchableOpacity
               className="w-max"
               onPress={() => {
                 setModalVisible(!modalVisible);
               }}
             >
-              <View className="flex h-9 w-max items-center justify-center rounded-md border border-gray-300 px-3 text-sm  font-medium">
+              <View className="flex h-9 w-max items-center justify-center rounded-md border border-black px-3 text-sm  font-medium">
                 <Text className="text-lg font-medium">View Recipe</Text>
               </View>
             </TouchableOpacity>
@@ -150,7 +169,7 @@ export const RecipeCard: React.FC<{
                 </TouchableOpacity>
               </View>
             </View>
-            <View className="mb-6">
+            <View className="mb-3">
               <Text className="italic text-slate-600">
                 By{" "}
                 <Text className="font-medium">
@@ -158,52 +177,82 @@ export const RecipeCard: React.FC<{
                 </Text>
               </Text>
             </View>
-            <View className="gap-y-2">
-              <Text className="text-lg font-semibold">Ingredients</Text>
-              <View className="my-2 rounded bg-gray-200 p-2">
-                {recipe.ingredients.map((ingredient, index) => (
-                  <View
-                    className="flex flex-row gap-x-2"
-                    key={`${ingredient.id} ${index}`}
-                  >
-                    <Text className="font-semibold">{`${index + 1}.`}</Text>
-                    <Text className="italic">
-                      {[
-                        ingredient.amount,
-                        units.find((unit) => unit.id === ingredient.unitId)
-                          ?.name || "",
-                        "of",
-                        ingredients.find(
-                          ({ id }) => id === ingredient.ingredientId,
-                        )?.name || "",
-                      ].join(" ")}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-              <Text className="text-lg font-semibold">Instructions</Text>
-              <View className="my-2 rounded bg-gray-200 p-2">
-                {recipe.instructions.map((instruction, index) => (
-                  <View className="flex flex-row gap-x-2" key={instruction.id}>
-                    <Text className="font-semibold">{`${index + 1}.`}</Text>
-                    <Text className="italic">{instruction.instruction}</Text>
-                  </View>
-                ))}
-              </View>
-              <View className="mb-8 flex flex-row items-center justify-between">
+            <View className="mb-4 gap-y-6">
+              <View className="flex flex-row items-center justify-between">
                 <View className="flex flex-row items-center gap-x-2">
-                  <Fire className="text-orange-500" />
+                  <Fire
+                    className={
+                      recipe.difficulty === "Easy"
+                        ? "text-green-800"
+                        : recipe.difficulty === "Medium"
+                        ? "text-orange-500"
+                        : "text-red-500"
+                    }
+                  />
                   <Text className="text-base text-slate-500">
-                    Medium Difficulty
+                    {recipe.difficulty} Difficulty
                   </Text>
                 </View>
+
+                <View className="flex flex-row items-center gap-x-2">
+                  <Clock className="text-slate-500" />
+                  <Text className="text-base text-slate-500">
+                    {recipe.timeRequired} min
+                  </Text>
+                </View>
+              </View>
+              <View>
+                <Text className="text-lg font-semibold">Ingredients</Text>
+                <View className="my-2 rounded bg-gray-200 p-2">
+                  {recipe.ingredients.map((ingredient, index) => (
+                    <View
+                      className="flex flex-row gap-x-2"
+                      key={`${ingredient.id} ${index}`}
+                    >
+                      <Text className="font-semibold">{`${index + 1}.`}</Text>
+                      <Text className="italic">
+                        {[
+                          ingredient.amount,
+                          units.find((unit) => unit.id === ingredient.unitId)
+                            ?.name || "",
+                          "of",
+                          ingredients.find(
+                            ({ id }) => id === ingredient.ingredientId,
+                          )?.name || "",
+                        ].join(" ")}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+              <View>
+                <Text className="text-lg font-semibold">Instructions</Text>
+                <View className="my-2 rounded bg-gray-200 p-2">
+                  {!!recipe.instructions.length &&
+                    recipe.instructions.map((instruction, index) => (
+                      <View
+                        className="flex flex-row gap-x-2"
+                        key={instruction.id}
+                      >
+                        <Text className="font-semibold">{`${index + 1}.`}</Text>
+                        <Text className="italic">
+                          {instruction.instruction}
+                        </Text>
+                      </View>
+                    ))}
+                  {!recipe.instructions.length && (
+                    <Text className="italic">No instructions.</Text>
+                  )}
+                </View>
+              </View>
+              <View>
                 <TouchableOpacity
                   className="w-max"
                   onPress={() => {
                     setModalVisible(!modalVisible);
                   }}
                 >
-                  <View className="flex h-9 w-max items-center justify-center rounded-md border border-gray-300 px-3 text-sm  font-medium">
+                  <View className="flex h-9 w-max items-center justify-center rounded-md border border-black px-3 text-sm font-medium">
                     <Text className="text-lg font-medium">Close</Text>
                   </View>
                 </TouchableOpacity>

@@ -141,6 +141,9 @@ export const recipeRouter = router({
             ...ingredientConditions,
           ],
         },
+        orderBy: {
+          createdAt: "desc",
+        },
       });
 
       const users = (
@@ -181,6 +184,8 @@ export const recipeRouter = router({
             unitId: z.string(),
           }),
         ),
+        timeRequired: z.string(),
+        difficulty: z.enum(["Easy", "Medium", "Hard"]),
       }),
     )
     .mutation(async ({ ctx, input }) => {
