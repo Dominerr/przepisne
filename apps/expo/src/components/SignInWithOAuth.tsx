@@ -1,6 +1,6 @@
 import { useOAuth } from "@clerk/clerk-expo";
 import React from "react";
-import { Button, View } from "react-native";
+import { Text, Image, TouchableOpacity, View } from "react-native";
 import { useWarmUpBrowser } from "../hooks/useWarmUpBrowser";
 import * as AuthSession from "expo-auth-session";
 
@@ -80,12 +80,17 @@ const SignInWithOAuth = () => {
   }, []);
 
   return (
-    <View className="rounded-lg border-2 border-gray-500 p-4">
-      <Button
-        title="Sign in with Google"
-        onPress={handleSignInWithGooglePress}
+    <TouchableOpacity
+      onPress={handleSignInWithGooglePress}
+      className="relative flex w-4/5 flex-row items-center justify-center gap-x-4 rounded-md border-2 border-gray-500 p-4"
+    >
+      <Image
+        className="absolute left-2"
+        source={require("../../../expo/assets/google-icon.png")}
+        style={{ width: 30, height: 30 }}
       />
-    </View>
+      <Text className="text-xl font-medium">Sign in with Google</Text>
+    </TouchableOpacity>
   );
 };
 

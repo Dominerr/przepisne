@@ -1,13 +1,21 @@
 import React from "react";
 
-import { View, SafeAreaView } from "react-native";
+import { View, SafeAreaView, Image, Text } from "react-native";
 
 import SignInWithOAuth from "../components/SignInWithOAuth";
 
 export const SignInSignUpScreen = () => {
   return (
-    <SafeAreaView className="bg-[#2e026d] bg-gradient-to-b from-[#2e026d] to-[#15162c]">
-      <View className="h-full w-full p-4">
+    <SafeAreaView className="h-full items-center justify-center gap-y-32">
+      <View className="flex items-center justify-center">
+        <Image
+          source={require("../../../expo/assets/icon.png")}
+          style={{ width: 300, height: 300 }}
+        />
+        <Text className="text-3xl font-bold">Welcome to Przepisne</Text>
+        <Text className="text-xl italic ">Your one stop shop for recipes</Text>
+      </View>
+      <View className="w-full items-center p-4">
         <SignInWithOAuth />
       </View>
     </SafeAreaView>

@@ -9,12 +9,13 @@ const defineConfig = (_ctx: ConfigContext): ExpoConfig => ({
   version: "1.0.0",
   scheme: "przepisne",
   orientation: "portrait",
+
   icon: "./assets/icon.png",
   userInterfaceStyle: "light",
   splash: {
     image: "./assets/icon.png",
     resizeMode: "contain",
-    backgroundColor: "#2e026d",
+    backgroundColor: "white",
   },
   updates: {
     fallbackToCacheTimeout: 0,
@@ -28,7 +29,7 @@ const defineConfig = (_ctx: ConfigContext): ExpoConfig => ({
     package: "com.przepisne.app",
     adaptiveIcon: {
       foregroundImage: "./assets/icon.png",
-      backgroundColor: "#2e026d",
+      backgroundColor: "white",
     },
   },
   extra: {

@@ -24,9 +24,10 @@ export function TabNavigator() {
         name="Home"
         component={HomeScreen}
         options={{
+          tabBarShowLabel: false,
           unmountOnBlur: true,
           header: () => <Header />,
-          tabBarActiveTintColor: "blue",
+          tabBarActiveTintColor: "rgb(20 184 166)",
           tabBarIcon: ({ color, size }) => (
             <Home width={size} height={size} color={color} />
           ),
@@ -36,9 +37,10 @@ export function TabNavigator() {
         name="Discover"
         component={DiscoverScreen}
         options={{
+          tabBarShowLabel: false,
           unmountOnBlur: true,
           header: () => <Header />,
-          tabBarActiveTintColor: "red",
+          tabBarActiveTintColor: "rgb(20 184 166)",
           tabBarIcon: ({ color, size }) => (
             <Search width={size} height={size} color={color} />
           ),
@@ -48,9 +50,10 @@ export function TabNavigator() {
         name="CreateRecipe"
         component={CreateRecipeScreen}
         options={{
+          tabBarShowLabel: false,
           unmountOnBlur: true,
           header: () => <Header />,
-          tabBarActiveTintColor: "red",
+          tabBarActiveTintColor: "rgb(20 184 166)",
           tabBarIcon: ({ color, size }) => (
             <Add width={size} height={size} color={color} />
           ),
