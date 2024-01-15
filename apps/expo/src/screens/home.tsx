@@ -46,7 +46,8 @@ export const HomeScreen = ({ navigation }: HomeScreenProps) => {
   if (
     !areIngredientsSuccess ||
     !areUnitsSuccess ||
-    !areFavouriteRecipesSuccess
+    !areFavouriteRecipesSuccess ||
+    !favouriteRecipesPages
   ) {
     return <Text>Loading...</Text>;
   }
@@ -68,7 +69,7 @@ export const HomeScreen = ({ navigation }: HomeScreenProps) => {
         </TouchableOpacity>
       </View>
 
-      {favouriteRecipesPages?.length === 0 && (
+      {favouriteRecipesPages.length === 0 && (
         <View className="flex h-full flex-col items-center justify-center">
           <Text className="text-2xl font-semibold text-black">
             You have no favourite recipes!
@@ -78,7 +79,7 @@ export const HomeScreen = ({ navigation }: HomeScreenProps) => {
           </Text>
         </View>
       )}
-      {favouriteRecipesPages?.length && favouriteRecipesPages.length > 0 && (
+      {favouriteRecipesPages.length > 0 && (
         <FlashList
           data={[...favouriteRecipesPages]}
           estimatedItemSize={20}
