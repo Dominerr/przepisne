@@ -25,8 +25,7 @@ export default async function handler(
     // If the verification fails, return a 400 error
     return res.status(400).json({});
   }
-  const { id, firstName, lastName } = evt.data;
-  console.log(evt.data, "evt.data");
+  const { id, first_name, last_name } = evt.data;
 
   const trpc = await createContext({ req, res });
 
@@ -36,8 +35,8 @@ export default async function handler(
       await trpc.prisma.user.create({
         data: {
           id: id,
-          firstName: firstName,
-          lastName: lastName,
+          firstName: first_name,
+          lastName: last_name,
         },
       });
       res.status(201).json({ message: "User created successfully" });
