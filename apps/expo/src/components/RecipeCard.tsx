@@ -152,15 +152,22 @@ export const RecipeCard: React.FC<{
           setModalVisible(!modalVisible);
         }}
       >
-        <StatusBar backgroundColor={modalVisible ? "rgba(0, 0, 0, 0.5)" : ""} />
         <SafeAreaView
+          onTouchEnd={() => {
+            setModalVisible(!modalVisible);
+          }}
           className="h-full justify-center"
           style={{
             backgroundColor: modalVisible ? "rgba(0, 0, 0, 0.5)" : "",
           }}
         >
-          <ScrollView className="m-4 flex-grow-0 rounded-lg border border-gray-300 bg-white px-4 pt-6 pb-0">
-            <View className="flex flex-row items-center">
+          <ScrollView
+            onTouchEnd={(e) => {
+              e.stopPropagation();
+            }}
+            className="m-4 flex-grow-0 rounded-lg border border-gray-300 bg-white px-4"
+          >
+            <View className="flex flex-row items-center pt-6">
               <Text className="flex-1 text-2xl font-bold leading-6">
                 {recipe.name}
               </Text>

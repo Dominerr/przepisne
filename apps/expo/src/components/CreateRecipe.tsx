@@ -197,70 +197,22 @@ export const CreateRecipe = () => {
               Add recipe
             </Text>
           </View>
-          <View>
-            <Controller
-              control={control}
-              render={({ field: { onChange, value } }) => (
-                <CustomTextInput
-                  label="Recipe name"
-                  placeholder="Enter recipe name"
-                  error={!!errors.name}
-                  errorMessage="Recipe name is required"
-                  onChangeText={onChange}
-                  value={value}
-                />
-              )}
-              name="name"
-              rules={{ required: true }}
-            />
-            {nonEmptyInstructions.length > 0 && (
-              <View>
-                <Text className="text-sm font-medium">Instructions</Text>
-                <View className="my-2 w-full rounded p-2">
-                  {nonEmptyInstructions.map((item, index) => (
-                    <View
-                      key={item.instruction + index}
-                      className="flex flex-row"
-                    >
-                      <Text className="text-md font-semibold text-black">
-                        {`${index + 1}. `}
-                      </Text>
-                      <Text className="text-md flex-1 text-justify italic text-black">
-                        {item.instruction}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
-              </View>
-            )}
 
-            {watch("instructions")?.length === 0 ? (
-              <TouchableOpacity
-                className="mb-4 flex flex-row items-center justify-center rounded bg-teal-500 p-2"
-                onPress={() => {
-                  setInstructionsModalVisible(true);
-                  setValue(`instructions.${watch("instructions").length}`, {
-                    instruction: "",
-                  });
-                }}
-              >
-                <Text className="text-md font-medium leading-none text-white">
-                  Add instructions
-                </Text>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                className="mb-4 flex flex-row items-center justify-center rounded bg-teal-500 p-2"
-                onPress={() => {
-                  setInstructionsModalVisible(true);
-                }}
-              >
-                <Text className="text-md font-medium leading-none text-white">
-                  Edit instructions
-                </Text>
-              </TouchableOpacity>
+          <Controller
+            control={control}
+            render={({ field: { onChange, value } }) => (
+              <CustomTextInput
+                label="Recipe name"
+                placeholder="Enter recipe name"
+                error={!!errors.name}
+                errorMessage="Recipe name is required"
+                onChangeText={onChange}
+                value={value}
+              />
             )}
-          </View>
+            name="name"
+            rules={{ required: true }}
+          />
 
           {getValues("ingredients").length > 0 && (
             <View>
@@ -329,7 +281,7 @@ export const CreateRecipe = () => {
 
           <View>
             <TouchableOpacity
-              className="flex flex-row items-center justify-center rounded bg-teal-500 p-2"
+              className="mb-4 flex flex-row items-center justify-center rounded bg-teal-500 p-2"
               onPress={() => setIngredientsModalVisible(true)}
             >
               <Text className="text-md font-medium leading-none text-white">
@@ -342,6 +294,54 @@ export const CreateRecipe = () => {
               </Text>
             )}
           </View>
+
+          {nonEmptyInstructions.length > 0 && (
+            <View>
+              <Text className="text-sm font-medium">Instructions</Text>
+              <View className="my-2 w-full rounded p-2">
+                {nonEmptyInstructions.map((item, index) => (
+                  <View
+                    key={item.instruction + index}
+                    className="flex flex-row"
+                  >
+                    <Text className="text-md font-semibold text-black">
+                      {`${index + 1}. `}
+                    </Text>
+                    <Text className="text-md flex-1 text-justify italic text-black">
+                      {item.instruction}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {watch("instructions")?.length === 0 ? (
+            <TouchableOpacity
+              className="flex flex-row items-center justify-center rounded bg-teal-500 p-2"
+              onPress={() => {
+                setInstructionsModalVisible(true);
+                setValue(`instructions.${watch("instructions").length}`, {
+                  instruction: "",
+                });
+              }}
+            >
+              <Text className="text-md font-medium leading-none text-white">
+                Add instructions
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              className="flex flex-row items-center justify-center rounded bg-teal-500 p-2"
+              onPress={() => {
+                setInstructionsModalVisible(true);
+              }}
+            >
+              <Text className="text-md font-medium leading-none text-white">
+                Edit instructions
+              </Text>
+            </TouchableOpacity>
+          )}
 
           <View className="flex-row justify-between py-4">
             <View>
@@ -524,6 +524,7 @@ export const CreateRecipe = () => {
               </View>
               <View className="h-[375px] w-full space-y-8">
                 <FlashList
+                  keyboardShouldPersistTaps="always"
                   data={[...watch("instructions")]}
                   numColumns={1}
                   estimatedItemSize={8}
