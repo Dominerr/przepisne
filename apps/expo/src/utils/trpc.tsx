@@ -11,9 +11,10 @@ import Constants from "expo-constants";
  */
 import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { httpBatchLink } from "@trpc/client";
+import { TRPCClientError, httpBatchLink } from "@trpc/client";
 import { transformer } from "@acme/api/transformer";
 import { useAuth } from "@clerk/clerk-expo";
+import { ToastAndroid } from "react-native";
 
 /**
  * A set of typesafe hooks for consuming your API.
@@ -38,7 +39,23 @@ export const TRPCProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
   const { getToken } = useAuth();
-  const [queryClient] = React.useState(() => new QueryClient());
+  const [queryClient] = React.useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          mutations: {
+            onError: (error) => {
+              console.log(error, error instanceof TRPCClientError);
+              if (error instanceof TRPCClientError) {
+                ToastAndroid.show(error.message, ToastAndroid.SHORT);
+                return;
+              }
+              ToastAndroid.show("Something went wrong", ToastAndroid.SHORT);
+            },
+          },
+        },
+      }),
+  );
   const [trpcClient] = React.useState(() =>
     trpc.createClient({
       transformer,

@@ -8,6 +8,7 @@ import {
   ScrollView,
   SafeAreaView,
   StatusBar,
+  ToastAndroid,
 } from "react-native";
 import type { inferProcedureOutput } from "@trpc/server";
 import type { AppRouter } from "@acme/api";
@@ -16,12 +17,15 @@ import Star from "../assets/icons/Star";
 import { trpc } from "../utils/trpc";
 import { useUser } from "@clerk/clerk-expo";
 import Clock from "../assets/icons/Clock";
+import Delete from "../assets/icons/Delete";
 
 export const RecipeCard: React.FC<{
   recipe: inferProcedureOutput<AppRouter["recipe"]["all"]>[number];
   ingredients: inferProcedureOutput<AppRouter["helper"]["allIngredients"]>;
   units: inferProcedureOutput<AppRouter["helper"]["allUnits"]>;
-}> = ({ recipe, ingredients, units }) => {
+  isAuthor?: boolean;
+}> = ({ recipe, ingredients, units, isAuthor }) => {
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const utils = trpc.useContext();
   const { user } = useUser();
   const [modalVisible, setModalVisible] = useState(false);
@@ -31,6 +35,13 @@ export const RecipeCard: React.FC<{
         await utils.recipe.invalidate();
       },
     });
+
+  const { mutate: deleteRecipe } = trpc.recipe.delete.useMutation({
+    onSuccess: () => {
+      utils.recipe.invalidate();
+      ToastAndroid.show("Recipe deleted", ToastAndroid.SHORT);
+    },
+  });
 
   const isSaved = recipe?.savedByUsers?.some(
     (savedByUser) => savedByUser.userId === user?.id,
@@ -245,9 +256,9 @@ export const RecipeCard: React.FC<{
                   )}
                 </View>
               </View>
-              <View>
+              <View className="flex-row items-center">
                 <TouchableOpacity
-                  className="w-max"
+                  className="w-max flex-1"
                   onPress={() => {
                     setModalVisible(!modalVisible);
                   }}
@@ -256,9 +267,79 @@ export const RecipeCard: React.FC<{
                     <Text className="text-lg font-medium">Close</Text>
                   </View>
                 </TouchableOpacity>
+                {isAuthor && (
+                  <TouchableOpacity
+                    className="ml-4 p-2"
+                    onPress={() => {
+                      setDeleteModalVisible(!deleteModalVisible);
+                    }}
+                  >
+                    <Delete className="h-10 w-10 text-red-500" />
+                  </TouchableOpacity>
+                )}
               </View>
             </View>
           </ScrollView>
+        </SafeAreaView>
+      </Modal>
+      <Modal
+        animationType="none"
+        transparent
+        className="items-center justify-center"
+        visible={deleteModalVisible}
+        onRequestClose={() => {
+          setDeleteModalVisible(!deleteModalVisible);
+        }}
+      >
+        <StatusBar
+          backgroundColor={deleteModalVisible ? "rgba(0, 0, 0, 0.5)" : ""}
+        />
+        <SafeAreaView
+          className="h-full justify-center"
+          style={{
+            backgroundColor: deleteModalVisible ? "rgba(0, 0, 0, 0.5)" : "",
+          }}
+        >
+          <View className="m-4 flex-grow-0 rounded-lg border border-gray-300 bg-white px-4 pt-6 pb-0">
+            <View className="flex flex-row items-center">
+              <Text className="flex-1 text-2xl font-bold leading-6">
+                Delete Recipe
+              </Text>
+            </View>
+            <View className="mb-3">
+              <Text className="italic text-slate-600">
+                Are you sure you want to delete this recipe?
+              </Text>
+            </View>
+            <View className="mb-4 gap-y-6">
+              <View className="flex-row items-center">
+                <TouchableOpacity
+                  className="w-max flex-1"
+                  onPress={() => {
+                    setDeleteModalVisible(!deleteModalVisible);
+                  }}
+                >
+                  <View className="flex h-9 w-max items-center justify-center rounded-md border border-black px-3 text-sm font-medium">
+                    <Text className="text-lg font-medium">Cancel</Text>
+                  </View>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  className="ml-4 p-2"
+                  onPress={() => {
+                    deleteRecipe({
+                      id: recipe.id,
+                      userId: user?.id!,
+                    });
+                    setDeleteModalVisible(false);
+                    setModalVisible(false);
+                  }}
+                >
+                  <Delete className="h-10 w-10 text-red-500" />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
         </SafeAreaView>
       </Modal>
     </>

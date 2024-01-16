@@ -128,7 +128,7 @@ export const CreateRecipe = () => {
     async onSuccess() {
       ToastAndroid.show("Recipe created", ToastAndroid.SHORT);
       reset();
-      await utils.recipe.all.invalidate();
+      await utils.recipe.invalidate();
     },
   });
 
@@ -546,7 +546,7 @@ export const CreateRecipe = () => {
                               />
                             </View>
                             <TouchableOpacity
-                              className="mb-[10px] w-min"
+                              className="mb-[18px] ml-2 w-min"
                               onPress={() => {
                                 setValue(
                                   "instructions",
@@ -556,7 +556,7 @@ export const CreateRecipe = () => {
                                 );
                               }}
                             >
-                              <Delete className="h-10 w-10  text-red-300" />
+                              <Delete className="text-red-500" />
                             </TouchableOpacity>
                           </View>
                         )}

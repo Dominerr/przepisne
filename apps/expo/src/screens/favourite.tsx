@@ -1,12 +1,6 @@
 import React from "react";
 
-import {
-  RefreshControl,
-  Text,
-  ToastAndroid,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { RefreshControl, Text, TouchableOpacity, View } from "react-native";
 
 import { FlashList } from "@shopify/flash-list";
 
@@ -18,19 +12,19 @@ import { RootParamList } from "../components/TabNavigation";
 import { RecipeCard } from "../components/RecipeCard";
 import { useUser } from "@clerk/clerk-expo";
 
-type HomeScreenProps = StackScreenProps<RootParamList, "Home">;
+type FavouriteScreenProps = StackScreenProps<RootParamList, "Favourite">;
 
-export const HomeScreen = ({ navigation }: HomeScreenProps) => {
+export const FavouriteScreen = ({ navigation }: FavouriteScreenProps) => {
   const [refreshing, setRefreshing] = React.useState(false);
   const { user } = useUser();
   const utils = trpc.useContext();
   const {
-    data: myRecipes,
-    isSuccess: areMyRecipesSuccess,
+    data: favouriteRecipes,
+    isSuccess: areFavouriteRecipesSuccess,
     fetchNextPage,
-  } = trpc.recipe.byAuthorId.useInfiniteQuery(
+  } = trpc.recipe.favourite.useInfiniteQuery(
     {
-      authorId: user?.id!,
+      userId: user?.id!,
       limit: 10,
     },
     {
@@ -45,13 +39,15 @@ export const HomeScreen = ({ navigation }: HomeScreenProps) => {
   const { data: units, isSuccess: areUnitsSuccess } =
     trpc.helper.allUnits.useQuery();
 
-  const myRecipesPages = myRecipes?.pages.flatMap((page) => page.recipes);
+  const favouriteRecipesPages = favouriteRecipes?.pages.flatMap(
+    (page) => page.recipes,
+  );
 
   if (
     !areIngredientsSuccess ||
     !areUnitsSuccess ||
-    !areMyRecipesSuccess ||
-    !myRecipesPages
+    !areFavouriteRecipesSuccess ||
+    !favouriteRecipesPages
   ) {
     return <Text>Loading...</Text>;
   }
@@ -60,40 +56,30 @@ export const HomeScreen = ({ navigation }: HomeScreenProps) => {
     <View className="h-full w-full px-6 py-2">
       <View className="mb-4 flex flex-row items-center justify-between gap-x-2">
         <Text className="pb-2 text-2xl font-semibold text-black">
-          Your Recipes
+          Favourite Recipes
         </Text>
-
-        <TouchableOpacity
-          className="w-max rounded-md border border-gray-300 bg-white"
-          onPressOut={() => navigation.navigate("CreateRecipe")}
-        >
-          <View className="flex h-9 w-max items-center justify-center px-3 text-sm font-medium">
-            <Text className="text-lg font-medium">Create Recipe</Text>
-          </View>
-        </TouchableOpacity>
       </View>
 
-      {myRecipesPages.length === 0 && (
+      {favouriteRecipesPages.length === 0 && (
         <View className="flex h-full flex-col items-center justify-center">
           <Text className="text-2xl font-semibold text-black">
-            No recipes yet!
+            You have no favourite recipes!
           </Text>
           <Text className="text-md max-w-[250px] text-center font-medium text-black">
-            Create some recipes to see them here.
+            Add some recipes to your favourites to see them here.
           </Text>
         </View>
       )}
-      {myRecipesPages.length > 0 && (
+      {favouriteRecipesPages.length > 0 && (
         <FlashList
-          data={[...myRecipesPages]}
+          data={[...favouriteRecipesPages]}
           estimatedItemSize={20}
           ItemSeparatorComponent={() => <View className="h-4" />}
           renderItem={({ item }) => (
             <RecipeCard
-              recipe={item}
+              recipe={item.recipe}
               ingredients={ingredients}
               units={units}
-              isAuthor
             />
           )}
           refreshControl={

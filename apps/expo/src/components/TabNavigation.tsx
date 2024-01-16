@@ -7,10 +7,13 @@ import Home from "../assets/icons/Home";
 import Search from "../assets/icons/Search";
 import { CreateRecipeScreen } from "../screens/create_recipe";
 import Add from "../assets/icons/Add";
+import { FavouriteScreen } from "../screens/favourite";
+import Star from "../assets/icons/Star";
 
 export type RootParamList = {
   Test: undefined;
-  Home: { paramA: string };
+  Home: undefined;
+  Favourite: undefined;
   Discover: undefined;
   CreateRecipe: undefined;
 };
@@ -29,6 +32,18 @@ export function TabNavigator() {
           tabBarActiveTintColor: "rgb(20 184 166)",
           tabBarIcon: ({ color, size }) => (
             <Home width={size} height={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Favourite"
+        component={FavouriteScreen}
+        options={{
+          tabBarShowLabel: false,
+          header: () => <Header />,
+          tabBarActiveTintColor: "rgb(20 184 166)",
+          tabBarIcon: ({ color, size }) => (
+            <Star width={size} height={size} color={color} />
           ),
         }}
       />

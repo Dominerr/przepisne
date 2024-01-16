@@ -1,7 +1,7 @@
 import { router, publicProcedure, protectedProcedure } from "../trpc";
 import { z } from "zod";
-import { clerkClient } from "@clerk/nextjs/server";
 import type { User } from "@clerk/nextjs/dist/api";
+import { TRPCError } from "@trpc/server";
 
 const filterUserForClient = (user: User) => {
   return {
@@ -163,9 +163,41 @@ export const recipeRouter = router({
   byId: publicProcedure.input(z.string()).query(({ ctx, input }) => {
     return ctx.prisma.recipe.findFirst({ where: { id: input } });
   }),
-  byAuthorId: publicProcedure.input(z.string()).query(({ ctx, input }) => {
-    return ctx.prisma.recipe.findMany({ where: { authorId: input } });
-  }),
+  byAuthorId: publicProcedure
+    .input(
+      z.object({
+        authorId: z.string(),
+        limit: z.number().min(1).max(100),
+        cursor: z.string().nullish(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { authorId, limit, cursor } = input;
+
+      const recipes = await ctx.prisma.recipe.findMany({
+        where: { authorId },
+        include: {
+          ingredients: true,
+          instructions: true,
+          savedByUsers: true,
+          author: true,
+        },
+        skip: cursor ? 1 : undefined,
+        take: limit,
+        cursor: cursor ? { id: cursor } : undefined,
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+
+      const lastRecipe = recipes[recipes.length - 1];
+      const nextCursor = lastRecipe?.id;
+
+      return {
+        recipes,
+        nextCursor,
+      };
+    }),
   create: protectedProcedure
     .input(
       z.object({
@@ -204,5 +236,36 @@ export const recipeRouter = router({
       });
 
       return recipe;
+    }),
+
+  delete: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        userId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id, userId } = input;
+
+      const recipe = await ctx.prisma.recipe.findFirst({
+        where: {
+          id,
+          authorId: userId,
+        },
+      });
+
+      if (!recipe) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You are not authorized to delete this recipe",
+        });
+      }
+
+      await ctx.prisma.recipe.delete({
+        where: {
+          id,
+        },
+      });
     }),
 });

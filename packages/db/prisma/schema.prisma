@@ -38,7 +38,7 @@ model SavedRecipe {
   userId  String
   user    User   @relation(fields: [userId], references: [id])
   recipeId String
-  recipe  Recipe @relation(fields: [recipeId], references: [id])
+  recipe  Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 
  @@index([userId])
@@ -61,7 +61,7 @@ model RecipeIngredient {
     amount     Float
     ingredientId String
     unitId     String
-    recipe     Recipe @relation(fields: [recipeId], references: [id])
+    recipe     Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
     recipeId   String
 
     @@index([recipeId])
@@ -71,7 +71,7 @@ model RecipeInstruction {
     id         String @id @default(cuid())
     step       Int
     instruction String
-    recipe     Recipe @relation(fields: [recipeId], references: [id])
+    recipe     Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
     recipeId   String
 
     @@index([recipeId])
