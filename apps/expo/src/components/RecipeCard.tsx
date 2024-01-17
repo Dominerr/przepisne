@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import {
   Text,
@@ -18,6 +18,7 @@ import { trpc } from "../utils/trpc";
 import { useUser } from "@clerk/clerk-expo";
 import Clock from "../assets/icons/Clock";
 import Delete from "../assets/icons/Delete";
+import { CustomButton } from "./CustomButton";
 
 export const RecipeCard: React.FC<{
   recipe: inferProcedureOutput<AppRouter["recipe"]["all"]>[number];
@@ -25,16 +26,36 @@ export const RecipeCard: React.FC<{
   units: inferProcedureOutput<AppRouter["helper"]["allUnits"]>;
   isAuthor?: boolean;
 }> = ({ recipe, ingredients, units, isAuthor }) => {
+  const [isSaved, setIsSaved] = useState(
+    recipe?.savedByUsers?.some(
+      (savedByUser) => savedByUser.userId === user?.id,
+    ),
+  );
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const utils = trpc.useContext();
   const { user } = useUser();
   const [modalVisible, setModalVisible] = useState(false);
   const { mutate: changeFavouriteStatus } =
     trpc.recipe.changeFavouriteStatus.useMutation({
+      onMutate: () => {
+        setIsSaved(!isSaved);
+      },
+      onError: () => {
+        setIsSaved(!isSaved);
+        ToastAndroid.show("Something went wrong", ToastAndroid.SHORT);
+      },
       onSuccess: async () => {
         await utils.recipe.invalidate();
       },
     });
+
+  useEffect(() => {
+    setIsSaved(
+      recipe?.savedByUsers?.some(
+        (savedByUser) => savedByUser.userId === user?.id,
+      ),
+    );
+  }, [recipe]);
 
   const { mutate: deleteRecipe } = trpc.recipe.delete.useMutation({
     onSuccess: () => {
@@ -42,10 +63,6 @@ export const RecipeCard: React.FC<{
       ToastAndroid.show("Recipe deleted", ToastAndroid.SHORT);
     },
   });
-
-  const isSaved = recipe?.savedByUsers?.some(
-    (savedByUser) => savedByUser.userId === user?.id,
-  );
 
   return (
     <>
@@ -130,16 +147,16 @@ export const RecipeCard: React.FC<{
           </View>
 
           <View>
-            <TouchableOpacity
+            <CustomButton
               className="w-max"
               onPress={() => {
                 setModalVisible(!modalVisible);
               }}
             >
-              <View className="flex h-9 w-max items-center justify-center rounded-md border border-black px-3 text-sm  font-medium">
-                <Text className="text-lg font-medium">View Recipe</Text>
-              </View>
-            </TouchableOpacity>
+              <Text className="text-lg font-medium text-white">
+                View Recipe
+              </Text>
+            </CustomButton>
           </View>
         </View>
       </View>
@@ -264,16 +281,14 @@ export const RecipeCard: React.FC<{
                 </View>
               </View>
               <View className="flex-row items-center">
-                <TouchableOpacity
+                <CustomButton
                   className="w-max flex-1"
                   onPress={() => {
                     setModalVisible(!modalVisible);
                   }}
                 >
-                  <View className="flex h-9 w-max items-center justify-center rounded-md border border-black px-3 text-sm font-medium">
-                    <Text className="text-lg font-medium">Close</Text>
-                  </View>
-                </TouchableOpacity>
+                  <Text className="text-lg font-medium text-white">Close</Text>
+                </CustomButton>
                 {isAuthor && (
                   <TouchableOpacity
                     className="ml-4 p-2"
@@ -320,16 +335,14 @@ export const RecipeCard: React.FC<{
             </View>
             <View className="mb-4 gap-y-6">
               <View className="flex-row items-center">
-                <TouchableOpacity
+                <CustomButton
                   className="w-max flex-1"
                   onPress={() => {
                     setDeleteModalVisible(!deleteModalVisible);
                   }}
                 >
-                  <View className="flex h-9 w-max items-center justify-center rounded-md border border-black px-3 text-sm font-medium">
-                    <Text className="text-lg font-medium">Cancel</Text>
-                  </View>
-                </TouchableOpacity>
+                  <Text className="text-lg font-medium text-white">Cancel</Text>
+                </CustomButton>
 
                 <TouchableOpacity
                   className="ml-4 p-2"

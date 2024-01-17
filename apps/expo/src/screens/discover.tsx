@@ -16,6 +16,7 @@ import { RecipeCard } from "../components/RecipeCard";
 import { CustomTextInput } from "../components/CustomTextInput";
 import Search from "../assets/icons/Search";
 import Check from "../assets/icons/Check";
+import { CustomButton } from "../components/CustomButton";
 
 type DiscoverScreenProps = StackScreenProps<RootParamList, "Discover">;
 
@@ -95,6 +96,18 @@ export const DiscoverScreen = ({}: DiscoverScreenProps) => {
               <Search className="text-black" />
             </View>
           </TouchableOpacity>
+          {watch("ingredients")?.length > 0 && (
+            <TouchableOpacity
+              className="self-start"
+              onPress={() => {
+                setSearchModalVisible(true);
+              }}
+            >
+              <Text className="py-1 font-semibold italic text-black">
+                {watch("ingredients")?.length} ingredients selected
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
         {areRecipesLoading && (
           <Text className="text-md text-center font-medium">Loading...</Text>
@@ -151,15 +164,6 @@ export const DiscoverScreen = ({}: DiscoverScreenProps) => {
             <View>
               <View className="flex-row items-center justify-between border-b border-gray-200 p-4">
                 <Text className="text-2xl font-bold">Search Recipes</Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    setSearchModalVisible(false);
-                  }}
-                >
-                  <Text className="text-lg font-medium text-teal-600">
-                    Close
-                  </Text>
-                </TouchableOpacity>
               </View>
               <View className="p-4">
                 <Controller
@@ -189,7 +193,8 @@ export const DiscoverScreen = ({}: DiscoverScreenProps) => {
                   renderItem={({ item }) => {
                     const isSelected = watch("ingredients")?.includes(item.id);
                     return (
-                      <TouchableOpacity
+                      <CustomButton
+                        type={isSelected ? "success" : "primary"}
                         onPress={() => {
                           if (!watch("ingredients")) {
                             setValue("ingredients", [item.id]);
@@ -209,19 +214,11 @@ export const DiscoverScreen = ({}: DiscoverScreenProps) => {
                             ]);
                           }
                         }}
-                        className={`flex-row items-center justify-between rounded-lg border p-3 ${
-                          isSelected
-                            ? "border-gray-400 bg-gray-100"
-                            : "border-gray-200 bg-white"
-                        }`}
+                        className="flex-row items-center justify-between"
                       >
-                        <Text>{item.name}</Text>
-                        <Check
-                          className={
-                            isSelected ? "text-black" : "text-transparent"
-                          }
-                        />
-                      </TouchableOpacity>
+                        <Text className="text-white">{item.name}</Text>
+                        <Check className="text-black" />
+                      </CustomButton>
                     );
                   }}
                 />
@@ -229,14 +226,15 @@ export const DiscoverScreen = ({}: DiscoverScreenProps) => {
             </View>
           </View>
           <View className="self-center ">
-            <TouchableOpacity
+            <CustomButton
               onPress={() => {
                 setSearchModalVisible(false);
               }}
-              className="mb-4 items-center rounded-xl border border-gray-300 px-8 py-2"
+              type="secondary"
+              className="my-4 px-4"
             >
-              <Text className="text-md font-medium">Confirm</Text>
-            </TouchableOpacity>
+              <Text className="text-md font-medium text-white">Confirm</Text>
+            </CustomButton>
           </View>
         </View>
       </Modal>

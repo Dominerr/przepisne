@@ -20,6 +20,7 @@ import { RecipeForm, recipeSchema } from "../api/recipe";
 import { CustomTextInput } from "./CustomTextInput";
 import { useSwipe } from "../hooks/useSwipe";
 import Fire from "../assets/icons/Fire";
+import { CustomButton } from "./CustomButton";
 
 const nextInputVisible = (
   currentInputVisible: "ingredient" | "unit" | "amount",
@@ -217,13 +218,14 @@ export const CreateRecipe = () => {
           {getValues("ingredients").length > 0 && (
             <View>
               <Text className="text-sm font-medium">Ingredients</Text>
-              <View className="my-2 w-full rounded p-2">
+              <View className="my-2 w-full rounded py-2">
                 {getValues("ingredients").map((item, index) => (
                   <View
                     key={`${item.ingredientId} ${item.unitId} ${index}`}
                     className="flex w-full flex-row items-center justify-center"
                   >
-                    <TouchableOpacity
+                    <CustomButton
+                      className="mr-2 flex-1"
                       onPress={() => {
                         ingredientSetValue("amount", item.amount);
                         ingredientSetValue("unitId", item.unitId);
@@ -234,11 +236,12 @@ export const CreateRecipe = () => {
                         setIndexToEdit(index);
                       }}
                     >
-                      <Text className="text-md mx-1 my-2 min-w-[60px] rounded-lg border border-teal-200 p-2 text-center font-medium">
+                      <Text className="text-md min-w-[60px] rounded-lg text-center font-medium text-white">
                         {item.amount}
                       </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
+                    </CustomButton>
+                    <CustomButton
+                      className="mr-2 flex-1"
                       onPress={() => {
                         ingredientSetValue("amount", item.amount);
                         ingredientSetValue("unitId", item.unitId);
@@ -249,12 +252,13 @@ export const CreateRecipe = () => {
                         setIndexToEdit(index);
                       }}
                     >
-                      <Text className="text-md mx-1 my-2 min-w-[60px] rounded-lg border border-teal-200 p-2 text-center font-medium">
+                      <Text className="text-md min-w-[60px] rounded-lg text-center font-medium text-white">
                         {unitsAll.find(({ id }) => id === item.unitId)?.name}
                       </Text>
-                    </TouchableOpacity>
-                    <Text className="mx-1 my-2">of</Text>
-                    <TouchableOpacity
+                    </CustomButton>
+                    <Text className="max-w-[20px] flex-1">of</Text>
+                    <CustomButton
+                      className="ml-2 flex-1"
                       onPress={() => {
                         ingredientSetValue("amount", item.amount);
                         ingredientSetValue("unitId", item.unitId);
@@ -265,29 +269,29 @@ export const CreateRecipe = () => {
                         setIndexToEdit(index);
                       }}
                     >
-                      <Text className="text-md mx-1 my-2 min-w-[60px] rounded-lg border border-teal-200 p-2 text-center font-medium">
+                      <Text className="text-md min-w-[60px] rounded-lg text-center font-medium text-white">
                         {
                           ingredientsAll.find(
                             ({ id }) => id === item.ingredientId,
                           )?.name
                         }
                       </Text>
-                    </TouchableOpacity>
+                    </CustomButton>
                   </View>
                 ))}
               </View>
             </View>
           )}
 
-          <View>
-            <TouchableOpacity
-              className="mb-4 flex flex-row items-center justify-center rounded bg-teal-500 p-2"
+          <View className="my-3">
+            <CustomButton
               onPress={() => setIngredientsModalVisible(true)}
+              className="bg-ted-300"
             >
               <Text className="text-md font-medium leading-none text-white">
                 Add ingredients
               </Text>
-            </TouchableOpacity>
+            </CustomButton>
             {errors.ingredients && (
               <Text className="text-sm font-medium leading-none text-red-500">
                 Please add at least one ingredient
@@ -316,23 +320,23 @@ export const CreateRecipe = () => {
             </View>
           )}
 
-          {watch("instructions")?.length === 0 ? (
-            <TouchableOpacity
-              className="flex flex-row items-center justify-center rounded bg-teal-500 p-2"
+          {nonEmptyInstructions.length === 0 ? (
+            <CustomButton
               onPress={() => {
                 setInstructionsModalVisible(true);
-                setValue(`instructions.${watch("instructions").length}`, {
-                  instruction: "",
-                });
+                if (watch("instructions").length === 0) {
+                  setValue(`instructions.${watch("instructions").length}`, {
+                    instruction: "",
+                  });
+                }
               }}
             >
               <Text className="text-md font-medium leading-none text-white">
                 Add instructions
               </Text>
-            </TouchableOpacity>
+            </CustomButton>
           ) : (
-            <TouchableOpacity
-              className="flex flex-row items-center justify-center rounded bg-teal-500 p-2"
+            <CustomButton
               onPress={() => {
                 setInstructionsModalVisible(true);
               }}
@@ -340,7 +344,7 @@ export const CreateRecipe = () => {
               <Text className="text-md font-medium leading-none text-white">
                 Edit instructions
               </Text>
-            </TouchableOpacity>
+            </CustomButton>
           )}
 
           <View className="flex-row justify-between py-4">
@@ -350,57 +354,59 @@ export const CreateRecipe = () => {
               </Text>
               {difficultyPanelVisible ? (
                 <View className="items-center justify-center gap-y-2">
-                  <TouchableOpacity
+                  <CustomButton
+                    className="w-[120px] flex-row items-center justify-center"
                     onPress={() => {
                       setValue("difficulty", "Easy");
                       setDifficultyPanelVisible((prev) => !prev);
                     }}
-                    className="w-[120px] flex-row items-center justify-center rounded-lg border border-gray-300 bg-white p-2"
                   >
-                    <Fire className="text-green-800" />
-                    <Text className="text-base text-slate-500">Easy</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
+                    <Fire className="text-green-400" />
+                    <Text className="text-center text-base text-white">
+                      Easy
+                    </Text>
+                  </CustomButton>
+                  <CustomButton
+                    className="w-[120px] flex-row items-center justify-center"
                     onPress={() => {
                       setValue("difficulty", "Medium");
                       setDifficultyPanelVisible((prev) => !prev);
                     }}
-                    className="w-[120px] flex-row items-center justify-center rounded-lg border border-gray-300 bg-white p-2"
                   >
                     <Fire className="text-orange-500" />
-                    <Text className="text-base text-slate-500">Medium</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
+                    <Text className="text-base text-white">Medium</Text>
+                  </CustomButton>
+                  <CustomButton
+                    className="w-[120px] flex-row items-center justify-center"
                     onPress={() => {
                       setValue("difficulty", "Hard");
                       setDifficultyPanelVisible((prev) => !prev);
                     }}
-                    className="w-[120px] flex-row items-center justify-center rounded-lg border border-gray-300 bg-white p-2"
                   >
                     <Fire className="text-red-500" />
-                    <Text className="text-base text-slate-500">Hard</Text>
-                  </TouchableOpacity>
+                    <Text className="text-base text-white">Hard</Text>
+                  </CustomButton>
                 </View>
               ) : (
-                <TouchableOpacity
+                <CustomButton
+                  className="w-[120px] flex-row items-center justify-center"
                   onPress={() => {
                     setDifficultyPanelVisible((prev) => !prev);
                   }}
-                  className="relative w-[120px] flex-row items-center justify-center rounded-lg border border-gray-300 p-2"
                 >
                   <Fire
                     className={
                       watch("difficulty") === "Easy"
-                        ? "text-green-800"
+                        ? "text-green-400"
                         : watch("difficulty") === "Medium"
                         ? "text-orange-500"
                         : "text-red-500"
                     }
                   />
-                  <Text className="text-base text-slate-500">
+                  <Text className="text-base text-white">
                     {watch("difficulty")}
                   </Text>
-                </TouchableOpacity>
+                </CustomButton>
               )}
             </View>
             <View>
@@ -410,93 +416,90 @@ export const CreateRecipe = () => {
               {timeRequiredPanelVisible ? (
                 <View className="flex-row items-center gap-x-1">
                   <View className="items-center justify-center gap-y-1">
-                    <TouchableOpacity
+                    <CustomButton
+                      className="w-[58px] flex-row items-center justify-center"
                       onPress={() => {
                         setValue("timeRequired", "15");
                         setTimeRequiredPanelVisible((prev) => !prev);
                       }}
-                      className="w-[58px] items-center justify-center rounded-lg border border-gray-300 bg-white p-2"
                     >
-                      <Text className="leading-4 text-slate-500">15</Text>
-                      <Text className="leading-4 text-slate-500">min</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
+                      <Text className="leading-4 text-white">15</Text>
+                      <Text className="leading-4 text-white">min</Text>
+                    </CustomButton>
+                    <CustomButton
+                      className="w-[58px] flex-row items-center justify-center"
                       onPress={() => {
                         setValue("timeRequired", "45");
                         setTimeRequiredPanelVisible((prev) => !prev);
                       }}
-                      className="w-[58px] items-center justify-center rounded-lg border border-gray-300 bg-white p-2"
                     >
-                      <Text className="leading-4 text-slate-500">45</Text>
-                      <Text className="leading-4 text-slate-500">min</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
+                      <Text className="leading-4 text-white">45</Text>
+                      <Text className="leading-4 text-white">min</Text>
+                    </CustomButton>
+                    <CustomButton
+                      className="w-[58px] flex-row items-center justify-center"
                       onPress={() => {
                         setValue("timeRequired", "75");
                         setTimeRequiredPanelVisible((prev) => !prev);
                       }}
-                      className="w-[58px] items-center justify-center rounded-lg border border-gray-300 bg-white p-2"
                     >
-                      <Text className="leading-4 text-slate-500">75</Text>
-                      <Text className="leading-4 text-slate-500">min</Text>
-                    </TouchableOpacity>
+                      <Text className="leading-4 text-white">75</Text>
+                      <Text className="leading-4 text-white">min</Text>
+                    </CustomButton>
                   </View>
                   <View className="items-center justify-center gap-y-1">
-                    <TouchableOpacity
+                    <CustomButton
+                      className="w-[58px] flex-row items-center justify-center"
                       onPress={() => {
                         setValue("timeRequired", "30");
                         setTimeRequiredPanelVisible((prev) => !prev);
                       }}
-                      className="w-[58px] items-center justify-center rounded-lg border border-gray-300 bg-white p-2"
                     >
-                      <Text className="leading-4 text-slate-500">30</Text>
-                      <Text className="leading-4 text-slate-500">min</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
+                      <Text className="leading-4 text-white">30</Text>
+                      <Text className="leading-4 text-white">min</Text>
+                    </CustomButton>
+                    <CustomButton
+                      className="w-[58px] flex-row items-center justify-center"
                       onPress={() => {
                         setValue("timeRequired", "60");
                         setTimeRequiredPanelVisible((prev) => !prev);
                       }}
-                      className="w-[58px] items-center justify-center rounded-lg border border-gray-300 bg-white p-2"
                     >
-                      <Text className="leading-4 text-slate-500">60</Text>
-                      <Text className="leading-4 text-slate-500">min</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
+                      <Text className="leading-4 text-white">60</Text>
+                      <Text className="leading-4 text-white">min</Text>
+                    </CustomButton>
+                    <CustomButton
+                      className="w-[58px] flex-row items-center justify-center"
                       onPress={() => {
                         setValue("timeRequired", "90");
                         setTimeRequiredPanelVisible((prev) => !prev);
                       }}
-                      className="w-[58px] items-center justify-center rounded-lg border border-gray-300 bg-white p-2"
                     >
-                      <Text className="leading-4 text-slate-500">90</Text>
-                      <Text className="leading-4 text-slate-500">min</Text>
-                    </TouchableOpacity>
+                      <Text className="leading-4 text-white">90</Text>
+                      <Text className="leading-4 text-white">min</Text>
+                    </CustomButton>
                   </View>
                 </View>
               ) : (
-                <TouchableOpacity
+                <CustomButton
+                  className="w-[120px] flex-row items-center justify-center"
                   onPress={() => {
                     setTimeRequiredPanelVisible((prev) => !prev);
                   }}
-                  className="relative w-[120px] flex-row items-center justify-center rounded-lg border border-gray-300 p-2"
                 >
-                  <Text className="text-base text-slate-500">
+                  <Text className="text-base text-white">
                     {watch("timeRequired")}
                   </Text>
-                  <Text className="text-base text-slate-500">min</Text>
-                </TouchableOpacity>
+                  <Text className="text-base text-white">min</Text>
+                </CustomButton>
               )}
             </View>
           </View>
-          <TouchableOpacity
-            className="mb-0 mt-6 flex flex-row items-center justify-center rounded bg-teal-700 p-2"
-            onPress={onSubmit}
-          >
-            <Text className="text-md font-medium leading-none text-white">
+          <CustomButton type="secondary" onPress={onSubmit}>
+            <Text className="text-lg font-bold leading-none text-white">
               Save recipe
             </Text>
-          </TouchableOpacity>
+          </CustomButton>
         </View>
       </ScrollView>
 
@@ -571,9 +574,9 @@ export const CreateRecipe = () => {
             </View>
 
             <View className="flex flex-row gap-x-2">
-              <TouchableOpacity
+              <CustomButton
                 disabled={isLastInstructionEmpty}
-                className={`flex-1 items-center rounded-xl border border-gray-300 py-2 ${
+                className={`flex-1 ${
                   isLastInstructionEmpty ? "opacity-30" : "opacity-100"
                 }`}
                 onPress={() => {
@@ -582,17 +585,23 @@ export const CreateRecipe = () => {
                   });
                 }}
               >
-                <Text className="text-md font-medium">Add another</Text>
-              </TouchableOpacity>
+                <Text className="text-md font-medium text-white">
+                  Add another
+                </Text>
+              </CustomButton>
 
-              <TouchableOpacity
-                className="flex-1 items-center rounded-xl border border-gray-300 py-2"
+              <CustomButton
+                disabled={isLastInstructionEmpty}
+                className={`flex-1 ${
+                  isLastInstructionEmpty ? "opacity-30" : "opacity-100"
+                }`}
+                type="secondary"
                 onPress={() => {
                   setInstructionsModalVisible(false);
                 }}
               >
-                <Text className="text-md font-medium">Save</Text>
-              </TouchableOpacity>
+                <Text className="text-md font-medium text-white">Save</Text>
+              </CustomButton>
             </View>
           </View>
         </View>
@@ -784,61 +793,61 @@ export const CreateRecipe = () => {
             <View className="relative flex w-full items-center">
               <View className="flex w-full items-center">
                 <View className="mb-2 flex flex-row items-center gap-x-2">
-                  <TouchableOpacity
+                  <CustomButton
                     onPress={() => {
                       setIngredientInputVisible("amount");
                     }}
                   >
                     <Text
-                      className={`text-md min-w-[60px] rounded-lg border p-2 text-center font-medium ${
+                      className={`text-md min-w-[60px] rounded-lg text-center font-medium ${
                         ingredientInputVisible === "amount"
-                          ? "border-teal-600"
-                          : "border-teal-200"
+                          ? "text-teal-600"
+                          : "text-white"
                       }`}
                     >
                       {ingredientWatch("amount") || "..."}
                     </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
+                  </CustomButton>
+                  <CustomButton
                     onPress={() => {
                       setIngredientInputVisible("unit");
                     }}
                   >
                     <Text
-                      className={`text-md min-w-[60px] rounded-lg border p-2 text-center font-medium ${
+                      className={`text-md min-w-[60px] rounded-lg text-center font-medium ${
                         ingredientInputVisible === "unit"
-                          ? "border-teal-600"
-                          : "border-teal-200"
+                          ? "text-teal-600"
+                          : "text-white"
                       }`}
                     >
                       {unitsAll.find(
                         ({ id }) => id === ingredientWatch("unitId"),
                       )?.name || "..."}
                     </Text>
-                  </TouchableOpacity>
+                  </CustomButton>
                   <Text>of</Text>
-                  <TouchableOpacity
+                  <CustomButton
                     onPress={() => {
                       setIngredientInputVisible("ingredient");
                     }}
                   >
                     <Text
-                      className={`text-md min-w-[60px] rounded-lg border p-2 text-center font-medium ${
+                      className={`text-md min-w-[60px] rounded-lg text-center font-medium ${
                         ingredientInputVisible === "ingredient"
-                          ? "border-teal-600"
-                          : "border-teal-200"
+                          ? "text-teal-600"
+                          : "text-white"
                       }`}
                     >
                       {ingredientsAll.find(
                         ({ id }) => id === ingredientWatch("ingredientId"),
                       )?.name || "..."}
                     </Text>
-                  </TouchableOpacity>
+                  </CustomButton>
                 </View>
 
                 {mode === "create" && (
                   <View className="flex flex-row gap-x-2">
-                    <TouchableOpacity
+                    <CustomButton
                       disabled={disabled}
                       onPress={() => {
                         setValue(`ingredients.${numberOfIngredients}`, {
@@ -850,14 +859,17 @@ export const CreateRecipe = () => {
                         setIngredientInputVisible("amount");
                         searchReset();
                       }}
-                      className={`flex-1 items-center rounded-xl border border-gray-300 py-2 ${
+                      className={`flex-1 ${
                         disabled ? "opacity-30" : "opacity-100"
                       }`}
                     >
-                      <Text className="text-md font-medium">Add another</Text>
-                    </TouchableOpacity>
+                      <Text className="text-md font-medium text-white">
+                        Add another
+                      </Text>
+                    </CustomButton>
 
-                    <TouchableOpacity
+                    <CustomButton
+                      type="secondary"
                       disabled={disabled}
                       onPress={() => {
                         setValue(`ingredients.${numberOfIngredients}`, {
@@ -870,17 +882,19 @@ export const CreateRecipe = () => {
                         searchReset();
                         setIngredientInputVisible("amount");
                       }}
-                      className={`flex-1 items-center rounded-xl border border-gray-300 py-2 ${
+                      className={`flex-1 ${
                         disabled ? "opacity-30" : "opacity-100"
                       }`}
                     >
-                      <Text className="text-md font-medium">Save</Text>
-                    </TouchableOpacity>
+                      <Text className="text-md font-medium text-white">
+                        Save
+                      </Text>
+                    </CustomButton>
                   </View>
                 )}
                 {mode === "edit" && (
                   <View className="flex flex-row gap-x-2">
-                    <TouchableOpacity
+                    <CustomButton
                       disabled={disabled}
                       onPress={() => {
                         setIngredientsModalVisible(false);
@@ -889,14 +903,17 @@ export const CreateRecipe = () => {
                         searchReset();
                         setIngredientInputVisible("amount");
                       }}
-                      className={`flex-1 items-center rounded-xl border border-gray-300 py-2 ${
+                      className={`flex-1 ${
                         disabled ? "opacity-30" : "opacity-100"
                       }`}
                     >
-                      <Text className="text-md font-medium">Cancel</Text>
-                    </TouchableOpacity>
+                      <Text className="text-md font-medium text-white">
+                        Cancel
+                      </Text>
+                    </CustomButton>
 
-                    <TouchableOpacity
+                    <CustomButton
+                      type="secondary"
                       disabled={disabled}
                       onPress={() => {
                         setValue(`ingredients.${indexToEdit}`, {
@@ -910,12 +927,14 @@ export const CreateRecipe = () => {
                         searchReset();
                         setIngredientInputVisible("amount");
                       }}
-                      className={`flex-1 items-center rounded-xl border border-gray-300 py-2 ${
+                      className={`flex-1 ${
                         disabled ? "opacity-30" : "opacity-100"
                       }`}
                     >
-                      <Text className="text-md font-medium">Update</Text>
-                    </TouchableOpacity>
+                      <Text className="text-md font-medium text-white">
+                        Update
+                      </Text>
+                    </CustomButton>
                   </View>
                 )}
               </View>

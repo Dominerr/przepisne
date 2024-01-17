@@ -17,6 +17,7 @@ import { RootParamList } from "../components/TabNavigation";
 
 import { RecipeCard } from "../components/RecipeCard";
 import { useUser } from "@clerk/clerk-expo";
+import { CustomButton } from "../components/CustomButton";
 
 type HomeScreenProps = StackScreenProps<RootParamList, "Home">;
 
@@ -63,14 +64,9 @@ export const HomeScreen = ({ navigation }: HomeScreenProps) => {
           Your Recipes
         </Text>
 
-        <TouchableOpacity
-          className="w-max rounded-md border border-gray-300 bg-white"
-          onPressOut={() => navigation.navigate("CreateRecipe")}
-        >
-          <View className="flex h-9 w-max items-center justify-center px-3 text-sm font-medium">
-            <Text className="text-lg font-medium">Create Recipe</Text>
-          </View>
-        </TouchableOpacity>
+        <CustomButton onPressOut={() => navigation.navigate("CreateRecipe")}>
+          <Text className="text-lg font-medium text-white">Create Recipe</Text>
+        </CustomButton>
       </View>
 
       {myRecipesPages.length === 0 && (
