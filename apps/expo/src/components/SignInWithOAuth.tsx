@@ -86,7 +86,7 @@ const SignInWithOAuth = () => {
     >
       <Image
         className="absolute left-2"
-        source={require("../../../expo/assets/google-icon.png")}
+        source={require("../assets/images/google-icon.png")}
         style={{ width: 30, height: 30 }}
       />
       <Text className="text-xl font-medium">Sign in with Google</Text>

@@ -29,7 +29,7 @@ export function TabNavigator() {
         options={{
           tabBarShowLabel: false,
           header: () => <Header />,
-          tabBarActiveTintColor: "rgb(20 184 166)",
+          tabBarActiveTintColor: "#14B8A6",
           tabBarIcon: ({ color, size }) => (
             <Home width={size} height={size} color={color} />
           ),
@@ -41,7 +41,7 @@ export function TabNavigator() {
         options={{
           tabBarShowLabel: false,
           header: () => <Header />,
-          tabBarActiveTintColor: "rgb(20 184 166)",
+          tabBarActiveTintColor: "#14B8A6",
           tabBarIcon: ({ color, size }) => (
             <Star width={size} height={size} color={color} />
           ),
@@ -53,7 +53,7 @@ export function TabNavigator() {
         options={{
           tabBarShowLabel: false,
           header: () => <Header />,
-          tabBarActiveTintColor: "rgb(20 184 166)",
+          tabBarActiveTintColor: "#14B8A6",
           tabBarIcon: ({ color, size }) => (
             <Search width={size} height={size} color={color} />
           ),
@@ -65,7 +65,7 @@ export function TabNavigator() {
         options={{
           tabBarShowLabel: false,
           header: () => <Header />,
-          tabBarActiveTintColor: "rgb(20 184 166)",
+          tabBarActiveTintColor: "#14B8A6",
           tabBarIcon: ({ color, size }) => (
             <Add width={size} height={size} color={color} />
           ),

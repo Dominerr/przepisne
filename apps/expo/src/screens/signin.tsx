@@ -9,7 +9,7 @@ export const SignInSignUpScreen = () => {
     <SafeAreaView className="h-full items-center justify-center gap-y-32">
       <View className="flex items-center justify-center">
         <Image
-          source={require("../../../expo/assets/icon.png")}
+          source={require("./../assets/images/logo.png")}
           style={{ width: 300, height: 300 }}
         />
         <Text className="text-3xl font-bold">Welcome to Przepisne</Text>
