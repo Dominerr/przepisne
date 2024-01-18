@@ -26,8 +26,10 @@ export default async function handler(
     return res.status(400).json({});
   }
   const { id, first_name, last_name } = evt.data;
+  console.log("Received event:", evt);
 
   const trpc = await createContext({ req, res });
+  console.log("trpc:", trpc);
 
   const eventType = evt.type;
   if (eventType === "user.created") {
@@ -42,7 +44,7 @@ export default async function handler(
       res.status(201).json({ message: "User created successfully" });
     } catch (error) {
       console.error("User creation failed:", error);
-      res.status(500).json({ error: "User creation failed" });
+      res.status(500).json({ error: `Something went wrong ${error}` });
     }
   }
 
@@ -58,7 +60,7 @@ export default async function handler(
       });
     } catch (error) {
       console.error("User deletion failed:", error);
-      res.status(500).json({ error: "User deletion failed" });
+      res.status(500).json({ error: `Something went wrong ${error}` });
     }
   }
 }
