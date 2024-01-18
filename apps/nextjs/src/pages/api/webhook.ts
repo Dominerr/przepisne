@@ -28,7 +28,7 @@ export default async function handler(
   const { id, first_name, last_name } = evt.data;
   console.log("Received event:", evt);
 
-  console.log("waiting for createContext");
+  console.log("waiting for createContext", req, res);
   const trpc = await createContext({ req, res });
   console.log("trpc:", trpc);
 
