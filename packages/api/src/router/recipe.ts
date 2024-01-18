@@ -1,6 +1,6 @@
 import { router, publicProcedure, protectedProcedure } from "../trpc";
 import { z } from "zod";
-import type { User } from "@clerk/nextjs/dist/api";
+import type { User } from "@clerk/nextjs/api";
 import { TRPCError } from "@trpc/server";
 
 const filterUserForClient = (user: User) => {
