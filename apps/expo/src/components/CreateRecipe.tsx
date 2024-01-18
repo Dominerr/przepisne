@@ -70,6 +70,7 @@ export const CreateRecipe = () => {
     },
     6,
   );
+
   const [indexToEdit, setIndexToEdit] = useState(0);
 
   const [instructionsModalVisible, setInstructionsModalVisible] =
