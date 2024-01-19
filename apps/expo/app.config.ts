@@ -6,10 +6,9 @@ const CLERK_PUBLISHABLE_KEY =
 const defineConfig = (_ctx: ConfigContext): ExpoConfig => ({
   name: "Przepisne",
   slug: "przepisne",
-  version: "1.0.0",
-  scheme: "przepisne",
+  version: "1.1.0",
+  scheme: "przepisne.app",
   orientation: "portrait",
-
   icon: "./assets/icon.png",
   userInterfaceStyle: "light",
   splash: {

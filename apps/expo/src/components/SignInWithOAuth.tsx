@@ -1,6 +1,6 @@
 import { useOAuth } from "@clerk/clerk-expo";
 import React from "react";
-import { Text, Image, TouchableOpacity, View } from "react-native";
+import { Text, Image, TouchableOpacity } from "react-native";
 import { useWarmUpBrowser } from "../hooks/useWarmUpBrowser";
 import * as AuthSession from "expo-auth-session";
 
