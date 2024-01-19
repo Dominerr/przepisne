@@ -28,11 +28,8 @@ const getBaseUrl = () => {
    * you don't have anything else running on it, or you'd have to change it.
    */
   const localhost = Constants.manifest?.debuggerHost?.split(":")[0];
-  if (!localhost) {
-    return "https://przepisne.vercel.app";
-  }
 
-  return `http://${localhost}:3000`;
+  return "https://przepisne.vercel.app";
 };
 
 export const TRPCProvider: React.FC<{
