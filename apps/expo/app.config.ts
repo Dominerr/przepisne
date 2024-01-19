@@ -4,10 +4,10 @@ const CLERK_PUBLISHABLE_KEY =
   "pk_test_cmVsYXhpbmctYnVubnktNjEuY2xlcmsuYWNjb3VudHMuZGV2JA";
 
 const defineConfig = (_ctx: ConfigContext): ExpoConfig => ({
-  name: "Przepisne",
-  slug: "przepisne",
+  name: "Przepisne2",
+  slug: "przepisne2",
   version: "1.1.0",
-  scheme: "przepisne.app",
+  scheme: "przepisne2.app",
   orientation: "portrait",
   icon: "./assets/icon.png",
   userInterfaceStyle: "light",
@@ -25,7 +25,7 @@ const defineConfig = (_ctx: ConfigContext): ExpoConfig => ({
     bundleIdentifier: "your.bundle.identifier",
   },
   android: {
-    package: "com.przepisne.app",
+    package: "com.przepisne2.app",
     adaptiveIcon: {
       foregroundImage: "./assets/icon.png",
       backgroundColor: "#ffffff",
@@ -33,7 +33,7 @@ const defineConfig = (_ctx: ConfigContext): ExpoConfig => ({
   },
   extra: {
     eas: {
-      projectId: "fed37cd2-cdb6-435d-9343-f4a6866c864a",
+      projectId: "733c1c3e-931d-47c1-b8ce-b75cdffcacc1",
     },
     CLERK_PUBLISHABLE_KEY,
   },
