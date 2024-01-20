@@ -29,21 +29,24 @@ export default async function handler(
   const eventType = evt.type;
   if (eventType === "user.created") {
     try {
-      const response = await fetch(`/api/trpc/auth.createUser?batch=1`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          0: {
-            json: {
-              id,
-              firstName: first_name,
-              lastName: last_name,
-            },
+      const response = await fetch(
+        `https://przepisne.vercel.app/api/trpc/auth.createUser?batch=1`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-        }),
-      });
+          body: JSON.stringify({
+            0: {
+              json: {
+                id,
+                firstName: first_name,
+                lastName: last_name,
+              },
+            },
+          }),
+        },
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
