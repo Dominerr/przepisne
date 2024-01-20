@@ -4,8 +4,6 @@ import type { WebhookRequiredHeaders } from "svix";
 
 import { Webhook } from "svix";
 
-import { createContext } from "@acme/api/src/context";
-
 const webhookSecret: string = process.env.WEBHOOK_SECRET ?? "";
 
 export default async function handler(
@@ -28,39 +26,32 @@ export default async function handler(
   const { id, first_name, last_name } = evt.data;
   console.log("Received event:", evt);
 
-  console.log("waiting for createContext");
-  const trpc = await createContext({ req, res });
-  console.log("trpc:", trpc);
-
   const eventType = evt.type;
   if (eventType === "user.created") {
     try {
-      await trpc.prisma.user.create({
-        data: {
-          id: id,
-          firstName: first_name,
-          lastName: last_name,
+      const response = await fetch(`/api/trpc/auth.createUser?batch=1`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
+        body: JSON.stringify({
+          0: {
+            json: {
+              id,
+              firstName: first_name,
+              lastName: last_name,
+            },
+          },
+        }),
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       res.status(201).json({ message: "User created successfully" });
     } catch (error) {
       console.error("User creation failed:", error);
-      res.status(500).json({ error: `Something went wrong ${error}` });
-    }
-  }
-
-  if (eventType === "user.deleted") {
-    try {
-      await trpc.prisma.user.delete({
-        where: {
-          id: id,
-        },
-      });
-      res.status(204).json({
-        message: "User deleted successfully",
-      });
-    } catch (error) {
-      console.error("User deletion failed:", error);
       res.status(500).json({ error: `Something went wrong ${error}` });
     }
   }
